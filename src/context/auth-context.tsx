@@ -9,37 +9,37 @@ import Cookies from 'js-cookie';
 import { decryptData, encryptData } from '@/utils/encrypt';
 import { api } from '@/services/api';
 
-export interface Access {
-  picture: string;
-  workspace_id: string;
-  type: "PERSONAL" | "BUSINESS";
-  name: string;
-  role: "ADMIN" | "OWNER" | "PROFESSIONAL" | "HYBRID";
-  workspace_updatedAt?: Date;
-}
-
-interface AuthUser {
+// Patient authentication context - aggregates all workspaces in single login
+export interface Patient {
+  id: string;
   email: string;
   name: string;
+  cpf: string;
+  phone?: string;
   picture?: string;
+  date_birth?: string;
+}
+
+export interface PatientWorkspace {
+  workspace_id: string;
+  workspace_name: string;
+  workspace_picture?: string;
+  workspace_type: "PERSONAL" | "BUSINESS";
+  status: "ACTIVE" | "PENDING" | "EXPIRED" | "ARCHIVED" | "REJECTED";
+  created_at: Date;
 }
 
 interface AuthContextInterface {
-  accesses: Access[];
-  user: AuthUser | undefined;
-  workspace?: Access;
+  patient: Patient | undefined;
   token: string;
-  signIn: (data: { accesses: Access[]; user: AuthUser; token: string }, remember?: boolean) => void;
+  workspaces: PatientWorkspace[];
+  signIn: (data: { patient: Patient; token: string; workspaces: PatientWorkspace[] }, remember?: boolean) => void;
   signOut: () => void;
-  setUser: React.Dispatch<React.SetStateAction<AuthUser | undefined>>;
-  signWorkspace: (workspace: Access, remember?: boolean) => Promise<void>;
-  signInWithWorkspace: (token: string, remember?: boolean) => void;
+  setPatient: React.Dispatch<React.SetStateAction<Patient | undefined>>;
+  acceptInvite: (workspaceId: string) => Promise<void>;
+  rejectInvite: (workspaceId: string) => Promise<void>;
+  refreshWorkspaces: () => Promise<void>;
   api: typeof api;
-  headers: {
-    headers: {
-      workspace_id: string;
-    };
-  };
 }
 
 const AuthContext = createContext<AuthContextInterface | undefined>(undefined);
@@ -50,77 +50,95 @@ interface AuthProviderInterface {
 
 export const AuthProvider = ({ children }: AuthProviderInterface) => {
   const [token, setToken] = useState('');
-  const [accesses, setAccesses] = useState<Access[]>([]);
-  const [workspace, setWorkspace] = useState<Access>();
-  const [user, setUser] = useState<AuthUser | undefined>(undefined);
+  const [patient, setPatient] = useState<Patient | undefined>(undefined);
+  const [workspaces, setWorkspaces] = useState<PatientWorkspace[]>([]);
 
   useEffect(() => {
-    const authCookie = Cookies.get('clinic_auth') as string;
-    const { user, accesses } = authCookie ? decryptData<{ user: AuthUser | undefined; accesses: Access[] }>(authCookie) : { user: undefined, accesses: [] };
-    const cookieToken = Cookies.get('clinic_token') as string;
-    const cookieWorkspace = Cookies.get('clinic_workspace');
-    const workspace = cookieWorkspace ? JSON.parse(cookieWorkspace) : undefined;
-    //Validar se o usuário possui workspace, se não tiver, redirecionar para a página de workspaces
-    // if (!cookieWorkspace) {
-    //   window.location.href = '/tela-de-seleção-de-workspace/clinicas';
-    //   return;
-    // }
-    if (user && accesses && cookieToken) {
-      setUser(user);
-      setAccesses(accesses);
+    const authCookie = Cookies.get('clinic_patient_auth') as string;
+    const authData = authCookie
+      ? decryptData<{ patient: Patient; workspaces: PatientWorkspace[] }>(authCookie)
+      : undefined;
+    const cookieToken = Cookies.get('clinic_patient_token') as string;
+
+    if (authData && cookieToken) {
+      setPatient(authData.patient);
+      setWorkspaces(authData.workspaces || []);
       setToken(cookieToken);
-      setWorkspace(workspace);
-      console.log('AuthProvider: User and accesses set from cookies');
+      console.log('AuthProvider: Patient authenticated from cookies');
     }
   }, []);
 
-  const signIn = (data: { accesses: Access[]; user: AuthUser; token: string }, remember?: boolean) => {
-    const { accesses, user, token } = data;
+  const signIn = (data: { patient: Patient; token: string; workspaces: PatientWorkspace[] }, remember?: boolean) => {
+    const { patient, token, workspaces } = data;
     setToken(token);
-    setUser(user);
-    setAccesses(accesses);
-    Cookies.set('clinic_token', token, { expires: remember ? 7 : undefined });
-    Cookies.set('clinic_auth', encryptData({ accesses, user }), { expires: remember ? 7 : undefined, secure: true });
-  };
+    setPatient(patient);
+    setWorkspaces(workspaces || []);
 
-  const signInWithWorkspace = (token: string, remember?: boolean) => {
-    Cookies.set('clinic_workspace_token', token, { expires: remember ? 7 : undefined, secure: true });
+    Cookies.set('clinic_patient_token', token, { expires: remember ? 7 : undefined });
+    Cookies.set('clinic_patient_auth', encryptData({ patient, workspaces }), {
+      expires: remember ? 7 : undefined,
+      secure: true
+    });
   };
 
   const signOut = () => {
-    Cookies.remove('clinic_auth');
-    Cookies.remove('clinic_workspace');
+    Cookies.remove('clinic_patient_auth');
+    Cookies.remove('clinic_patient_token');
     setToken('');
-    setUser(undefined);
-    setAccesses([]);
-    setWorkspace(undefined);
+    setPatient(undefined);
+    setWorkspaces([]);
   };
 
-  const headers = {
-    headers: {
-      workspace_id: workspace?.workspace_id ?? '',
-    },
+  const acceptInvite = async (workspaceId: string) => {
+    try {
+      await api.post(`/patient/workspaces/${workspaceId}/accept`);
+      await refreshWorkspaces();
+    } catch (error) {
+      console.error('Error accepting invite:', error);
+      throw error;
+    }
   };
 
-  async function signWorkspace(workspace: Access, remember?: boolean) {
-    setWorkspace(workspace);
-    Cookies.set('clinic_workspace', JSON.stringify(workspace), { expires: remember ? 7 : undefined, secure: true });
-  }
+  const rejectInvite = async (workspaceId: string) => {
+    try {
+      await api.post(`/patient/workspaces/${workspaceId}/reject`);
+      await refreshWorkspaces();
+    } catch (error) {
+      console.error('Error rejecting invite:', error);
+      throw error;
+    }
+  };
+
+  const refreshWorkspaces = async () => {
+    try {
+      const response = await api.get('/patient/workspaces');
+      setWorkspaces(response.data);
+
+      // Update cookie with new workspaces data
+      if (patient) {
+        Cookies.set('clinic_patient_auth', encryptData({ patient, workspaces: response.data }), {
+          secure: true
+        });
+      }
+    } catch (error) {
+      console.error('Error refreshing workspaces:', error);
+      throw error;
+    }
+  };
 
   return (
     <AuthContext.Provider
       value={{
-        accesses,
-        user,
+        patient,
         token,
-        workspace,
+        workspaces,
         signIn,
         signOut,
-        setUser,
-        api,
-        signWorkspace,
-        headers,
-        signInWithWorkspace
+        setPatient,
+        acceptInvite,
+        rejectInvite,
+        refreshWorkspaces,
+        api
       }}
     >
       {children}

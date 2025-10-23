@@ -3,7 +3,7 @@ import { api } from '.';
 import { AppRoutes } from './config/enum';
 
 interface CreateAccountProps {
-  workspace_type: 'PERSONAL' | 'BUSINESS';
+  workspace_type?: 'PERSONAL' | 'BUSINESS';
   email: string;
   password: string;
   name: string;
@@ -11,6 +11,8 @@ interface CreateAccountProps {
   crm_number?: string;
   workspace_name?: string;
   cnpj?: string;
+  phone?: string;
+  date_birth?: string;
 }
 
 export interface AccountData {
@@ -36,13 +38,13 @@ export interface AccountData {
 
 class AccountService {
   static async createAccount(body: CreateAccountProps): Promise<AxiosResponse> {
-    const response = await api.post(AppRoutes.ACCOUNT, body);
+    const response = await api.post(AppRoutes.PATIENT_ACCOUNT, body);
     return response;
   }
 
   static async getAccount(): Promise<AccountData> {
     try {
-      const response = await api.get(AppRoutes.ACCOUNT);
+      const response = await api.get(AppRoutes.PATIENT_ACCOUNT);
       return response.data
     } catch {
       return {
@@ -70,7 +72,7 @@ class AccountService {
 
   static async updateAccount(body: AccountData): Promise<{ message: string }> {
     try {
-      const response = await api.put(AppRoutes.ACCOUNT, body);
+      const response = await api.put(AppRoutes.PATIENT_ACCOUNT, body);
       return response.data
     } catch (error) {
       if (error instanceof AxiosError) {
@@ -83,7 +85,7 @@ class AccountService {
 
   static async updatePicture(picture: string): Promise<{ status: number, message: string }> {
     try {
-      const response = await api.post(AppRoutes.ACCOUNT + '/picture', { picture });
+      const response = await api.post(AppRoutes.PATIENT_ACCOUNT + '/picture', { picture });
       return {
         status: response.status,
         message: response.data.message
@@ -110,13 +112,24 @@ class AccountService {
     value: string;
   }): Promise<AxiosResponse> {
     const response = await api.get(
-      AppRoutes.ACCOUNT + `/validate?field=${field}&value=${value}`,
+      AppRoutes.PATIENT_ACCOUNT + `/validate?field=${field}&value=${value}`,
     );
     return response;
   }
 
-  static async signWorkspace(workspace_id: string): Promise<AxiosResponse> {
-    const response = await api.post(AppRoutes.ACCOUNT + '/accesses/sign-workspace', { workspace_id });
+  // Workspaces management (patient environment)
+  static async getWorkspaces(): Promise<AxiosResponse> {
+    const response = await api.get(AppRoutes.PATIENT_WORKSPACES);
+    return response;
+  }
+
+  static async acceptWorkspace(workspace_id: string): Promise<AxiosResponse> {
+    const response = await api.post(AppRoutes.PATIENT_WORKSPACES + `/${workspace_id}/accept`);
+    return response;
+  }
+
+  static async rejectWorkspace(workspace_id: string): Promise<AxiosResponse> {
+    const response = await api.post(AppRoutes.PATIENT_WORKSPACES + `/${workspace_id}/reject`);
     return response;
   }
 }

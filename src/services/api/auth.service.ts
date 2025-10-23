@@ -14,22 +14,22 @@ import { AppRoutes } from './config/enum';
 
 class AuthService {
   static async login(email: string, password: string) {
-    const response = await api.post(AppRoutes.AUTH, { email, password });
+    const response = await api.post(AppRoutes.PATIENT_AUTH, { email, password });
     return response;
   }
 
   static async validateEmail(token: string, email: string) {
-    const response = await api.post(AppRoutes.AUTH + "/validate-email", { token, email });
+    const response = await api.post(AppRoutes.PATIENT_AUTH + "/validate-email", { token, email });
     return response;
   }
 
   static async resendValidateEmail(email: string) {
-    const response = await api.post(AppRoutes.AUTH + "/resend-validate-email", { email });
+    const response = await api.post(AppRoutes.PATIENT_AUTH + "/resend-validate-email", { email });
     return response;
   }
 
   static async forgotPassword(email: string) {
-    const response = await api.post(AppRoutes.AUTH + '/forgot-password/', {
+    const response = await api.post(AppRoutes.PATIENT_AUTH + '/forgot-password', {
       email,
     });
     return response;
@@ -37,7 +37,7 @@ class AuthService {
 
   static async recoverPassword(data: RecoverPassword) {
     const response = await api.post(
-      AppRoutes.AUTH + '/recover-password/',
+      AppRoutes.PATIENT_AUTH + '/reset-password',
       data,
     );
     return response;

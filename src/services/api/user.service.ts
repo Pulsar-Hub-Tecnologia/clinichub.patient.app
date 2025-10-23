@@ -26,7 +26,5 @@ export class UserService {
     return api.delete(`/user/${id}`);
   }
 
-  static async getRole(id: string): Promise<AxiosResponse> {
-    return api.get(`/user/role/${id}`);
-  }
+  // getRole removed - not applicable for patient app (single role only)
 }
