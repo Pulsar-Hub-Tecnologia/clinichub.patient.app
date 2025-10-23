@@ -60,7 +60,7 @@ export interface ProfessionalFilterState {
   status: string[]
   inviteDateFrom: Date | undefined
   inviteDateTo: Date | undefined
-  role: string
+  // role removed - not applicable for patient app
   sortBy: string
 }
 

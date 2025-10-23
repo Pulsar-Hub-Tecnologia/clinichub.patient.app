@@ -13,11 +13,9 @@ import { toast } from 'react-toastify';
 import { AxiosError } from 'axios';
 import { useLoading } from '@/context/loading-context';
 import AccountService, { AccountData } from '@/services/api/account.service';
-import { useAuth } from '@/context/auth-context';
 import { useTheme } from '@/context/theme-context';
 import { formatPhone } from '@/utils/formats';
 import { CameraModal } from '@/components/modal/camera/camera';
-import { cn } from '@/lib/utils';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
@@ -44,12 +42,11 @@ const defaultAccountData: AccountData = {
 
 export default function Account() {
   const { onLoading, offLoading } = useLoading()
-  const { workspace } = useAuth()
   const { theme, setTheme } = useTheme()
 
   const [accountData, setAccountData] = useState<AccountData>(defaultAccountData)
   const [hasChanged, setHasChanged] = useState<boolean>(false)
-  const [isHybrid, setIsHibryd] = useState<boolean>(workspace?.role === "HYBRID" || workspace?.type === "PERSONAL")
+  // Removed hybrid role logic - not applicable for patient app
 
 
   const [preview, setPreview] = useState<string | null>(null);
@@ -164,12 +161,6 @@ export default function Account() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-lg font-semibold">Informações Pessoais</CardTitle>
-              {workspace?.type === "BUSINESS" && workspace.role !== "PROFESSIONAL" && (
-                <div className='flex items-center gap-2'>
-                  <p>Sou profissional</p>
-                  <Switch checked={isHybrid} onCheckedChange={(checked) => setIsHibryd(checked)} />
-                </div>
-              )}
             </CardHeader>
             <CardContent className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <BasicInput
@@ -205,35 +196,6 @@ export default function Account() {
                 value={accountData.date_birth}
                 onChange={(e) => handleChangeData("date_birth", e.target.value)}
               />
-              <div className={cn("col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 transition-all duration-500 ease-in-out overflow-hidden", isHybrid ? 'h-auto opacity-100' : 'h-0 opacity-0')}>
-                <BasicInput
-                  label="Número do Conselho Regional"
-                  placeholder="Digite o Número do Conselho Regional"
-                  id="crm"
-                  type="text"
-                  maxLength={13}
-                  value={accountData.regional_council_number}
-                  onChange={(e) => handleChangeData("regional_council_number", e.target.value)}
-                />
-                <BasicInput
-                  label="Especialidade"
-                  placeholder="Digite o sua Especialidade"
-                  id="especiality"
-                  type="text"
-                  value={accountData.especiality}
-                  onChange={(e) => handleChangeData("especiality", e.target.value)}
-                />
-                <BasicInput
-                  className="h-20"
-                  label="Bio Profissional"
-                  placeholder="Digite o sua Bio Prossional"
-                  id="bio"
-                  value={accountData.bio}
-                  useTextArea={true}
-                  onChange={(e) => handleChangeData("bio", e.target.value)}
-                />
-              </div>
-
             </CardContent>
           </Card>
 

@@ -43,11 +43,10 @@ export default function ProfessionalListPage() {
     status: [],
     inviteDateFrom: undefined,
     inviteDateTo: undefined,
-    role: "",
     sortBy: "",
   })
 
-  const { user } = useAuth()
+  const { patient } = useAuth()
 
   const { data, isLoading, error, refetch, isFetching } = useQuery({
     queryKey: ["professionals", currentPage, searchTerm, filters],
@@ -113,7 +112,6 @@ export default function ProfessionalListPage() {
       status: [],
       inviteDateFrom: undefined,
       inviteDateTo: undefined,
-      role: "",
       sortBy: "",
     })
     setCurrentPage(1)
@@ -124,7 +122,6 @@ export default function ProfessionalListPage() {
       filters.status.length > 0 ||
       filters.inviteDateFrom ||
       filters.inviteDateTo ||
-      filters.role ||
       filters.sortBy
     )
   }, [filters])
@@ -271,7 +268,7 @@ export default function ProfessionalListPage() {
                           {getProfessionalIcon(professional.status)}
                           <div>
                             <div className="font-medium">
-                              {professional.email} {user?.email === professional.email && "(EU)"}
+                              {professional.email} {patient?.email === professional.email && "(EU)"}
                             </div>
                             {professional.status === "ACTIVE" && (
                               <div className="text-xs text-gray-500">{professional.status === "ACTIVE" ? formatProfessionalInfo(professional.name!, professional.especiality, professional.crm) : professional.email}</div>
@@ -289,7 +286,7 @@ export default function ProfessionalListPage() {
                         <span className="text-sm">{format(professional.inviteDate, "dd/MM/yyyy")}</span>
                       </TableCell>
                       <TableCell>
-                        <span className="text-sm">{professional.role || "-"}</span>
+                        <span className="text-sm">-</span>
                       </TableCell>
                       <TableCell>
                         <ProfessionalActionsPopover

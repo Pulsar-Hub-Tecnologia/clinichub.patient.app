@@ -13,7 +13,6 @@ import { LogIn, Mail, Lock, EyeClosed, Eye } from 'lucide-react';
 import { emailValidator } from '@/utils/valid';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import AuthService from '@/services/api/auth.service';
-import AccountService from '@/services/api/account.service';
 import AuthBackground from '@/components/auth-background/auth-background';
 import { Checkbox } from '@/components/ui/checkbox';
 
@@ -31,7 +30,7 @@ const defaultFormFields: FormFields = {
 export default function Login() {
 
   const { onLoading, offLoading } = useLoading();
-  const { signIn, signInWithWorkspace, signWorkspace } = useAuth();
+  const { signIn } = useAuth();
   const [data, setData] = useState(defaultFormFields);
   const [emailError, setEmailError] = useState<string | undefined>(undefined);
   const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
@@ -64,29 +63,9 @@ export default function Login() {
       const response = await AuthService.login(email, password);
 
       if (response.status === 200) {
+        // Simplified login for patient app - no workspace selection needed
         await signIn(response.data, rememberAccess);
-
-        const accesses = response.data.accesses;
-        if (accesses.length === 1) {
-          AccountService.signWorkspace(accesses[0].workspace_id)
-            .then((response) => {
-              signInWithWorkspace(response.data, rememberAccess);
-              signWorkspace(accesses[0], rememberAccess);
-              navigate('/account');
-            })
-            .catch((error) => {
-              if (error instanceof AxiosError) {
-                console.error(error);
-                toast.error(
-                  error.response?.data?.message || 'Algo deu errado, tente novamente.'
-                );
-              }
-            });
-        } else if (accesses.length > 1) {
-          navigate('/settings/workspace');
-        } else {
-          toast.error('Você não possui acesso a nenhuma clínica.');
-        }
+        navigate('/dashboard');
       }
     } catch (error) {
       if (error instanceof AxiosError) {

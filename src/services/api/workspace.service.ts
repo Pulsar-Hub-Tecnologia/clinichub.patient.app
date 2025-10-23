@@ -38,7 +38,7 @@ interface Professional {
   crm?: string;
   status: "ACTIVE" | "PENDING" | "EXPIRED" | "ARCHIVED" | "REJECTED";
   inviteDate: Date;
-  role: string;
+  // role removed - not applicable for patient app
 }
 
 export interface ProfessionalStats {
@@ -62,7 +62,7 @@ export interface ProfessionalFilterState {
   status: string[]
   inviteDateFrom: Date | undefined
   inviteDateTo: Date | undefined
-  role: string
+  // role removed - not applicable for patient app
   sortBy: string
 }
 
@@ -173,7 +173,7 @@ class WorkspaceService {
 
     if (filters.inviteDateFrom) params.append("inviteDateFrom", filters.inviteDateFrom.toString());
     if (filters.inviteDateTo) params.append("inviteDateTo", filters.inviteDateTo.toString());
-    if (filters.role) params.append("function", filters.role);
+    // role filter removed - not applicable for patient app
     if (filters.sortBy) params.append("sortBy", filters.sortBy);
 
     const response = await api.get(AppRoutes.WORKSPACE + `/professionals?${params.toString()}`)
