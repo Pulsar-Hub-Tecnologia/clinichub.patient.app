@@ -1,18 +1,13 @@
 import Cookies from 'js-cookie';
-import { ReactNode } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Outlet } from 'react-router-dom';
 
-interface PrivateProps {
-  children: ReactNode;
-}
-
-export default function PrivateRoute({ children }: PrivateProps) {
+export default function PrivateRoute() {
   const token = () => {
     return Cookies.get("clinic_token")
   }
 
   if (token()) {
-    return children;
+    return <Outlet />;
   }
 
   return <Navigate to="/login" replace />;

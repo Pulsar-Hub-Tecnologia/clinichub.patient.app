@@ -2,7 +2,6 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 
 import { useTheme } from '@/context/theme-context.tsx';
-import { Access, useAuth } from '@/context/auth-context.tsx';
 
 import PrivateRoute from './private.routes.tsx';
 import PublicRoutes from './public.routes.tsx';
@@ -21,114 +20,83 @@ import ValidateEmail from '@/pages/public/validate-email.tsx';
 
 import Dashboard from '@/pages/private/dashboard.tsx';
 import Account from '@/pages/private/account.tsx';
-import WorkspaceSettings from '@/pages/private/settings/workspace.tsx';
-import Workspaces from '@/pages/private/workspaces.tsx';
-import PatientsListPage from '@/pages/private/patients/patient-list.tsx';
-import ProfessionalListPage from '@/pages/private/professionals/professional-list.tsx';
-
-const pagesAdmin = [
-  {
-    path: '/account',
-    allowedRoles: ['ADMIN', 'OWNER', 'PROFESSIONAL', 'HYBRID'],
-    component: Account,
-  },
-  {
-    path: '/settings/workspace',
-    allowedRoles: ['ADMIN', 'OWNER', 'PROFESSIONAL', 'HYBRID'],
-    component: WorkspaceSettings,
-  },
-  {
-    path: '/dashboard',
-    allowedRoles: ['ADMIN', 'OWNER', 'PROFESSIONAL', 'HYBRID'],
-    component: Dashboard,
-  },
-  {
-    path: '/patients',
-    allowedRoles: ['ADMIN', 'OWNER', 'PROFESSIONAL', 'HYBRID'],
-    component: PatientsListPage,
-  },
-  {
-    path: '/professionals',
-    allowedRoles: ['ADMIN', 'OWNER', 'HYBRID'],
-    component: ProfessionalListPage,
-  }
-];
-
-const pagesPaciente = [
-  { path: '/pacientes-dashboard', allowedRoles: ['PACIENTES'], component: Account },
-]
+import MyInvites from '@/pages/private/my-invites.tsx';
+import Consultations from '@/pages/private/consultations.tsx';
+import VideoCall from '@/pages/private/video-call.tsx';
 
 export const AppRoute = () => {
   const { theme } = useTheme();
-  const { accesses, workspace } = useAuth();
-  let workspace_id: string;
-  let access: Access | undefined;
-
-  if (workspace) {
-    workspace_id = workspace.workspace_id;
-    access = accesses.find(access => access.workspace_id === workspace_id)!;
-  }
 
   return (
     <>
       <ToastContainer theme={theme} />
       <Router>
         <Routes>
-          <Route path='/' element={<PublicRoutes />}>
-            <Route path={'/login'} element={<Login />} />
-            <Route path={'/register-access'} element={<RegisterAccess />} />
-            <Route path={'/register-info'} element={<RegisterInfo />} />
-            <Route path={'/verify-email'} element={<VerifyEmail />} />
-            <Route path={'/validate-email/:token/:email'} element={<ValidateEmail />} />
-            <Route path={'/forgot-password'} element={<ForgotPassword />} />
-            <Route path={'/recover/:token/:email'} element={<RecoverPassword />} />
+          <Route element={<PublicRoutes />}>
+            <Route path='/' element={<Login />} />
+            <Route path='/login' element={<Login />} />
+            <Route path='/register-access' element={<RegisterAccess />} />
+            <Route path='/register-info' element={<RegisterInfo />} />
+            <Route path='/verify-email' element={<VerifyEmail />} />
+            <Route path='/validate-email/:token/:email' element={<ValidateEmail />} />
+            <Route path='/forgot-password' element={<ForgotPassword />} />
+            <Route path='/recover/:token/:email' element={<RecoverPassword />} />
           </Route>
-          <Route path={'/workspaces'} element={<Workspaces />} />
 
-          {access &&
-            pagesAdmin
-              .filter((page) => page.allowedRoles.includes(access.role))
-              .map((e) => (
-                <Route
-                  key={e.path}
-                  path={e.path}
-                  element={
-                    <PrivateRoute>
-                      <SidebarProvider>
-                        <AppSidebar
-                          side="left"
-                          access={access}
-                        />
-                        <div className='flex flex-col h-full w-full'>
-                          <SidebarHeader />
-                          <e.component />
-                        </div>
-                      </SidebarProvider>
-                    </PrivateRoute>
-                  }
-                />
-              ))}
-
-          {pagesPaciente
-            .map((e) => (
-              <Route
-                key={e.path}
-                path={e.path}
-                element={
-                  <PrivateRoute>
-                    <SidebarProvider>
-                      <AppSidebar
-                        side="left"
-                      />
-                      <div className='flex flex-col h-full w-full'>
-                        <SidebarHeader />
-                        <e.component />
-                      </div>
-                    </SidebarProvider>
-                  </PrivateRoute>
-                }
-              />
-            ))}
+          <Route element={<PrivateRoute />}>
+            <Route
+              path='/dashboard'
+              element={
+                <SidebarProvider>
+                  <AppSidebar side="left" />
+                  <div className='flex flex-col h-full w-full'>
+                    <SidebarHeader />
+                    <Dashboard />
+                  </div>
+                </SidebarProvider>
+              }
+            />
+            <Route
+              path='/account'
+              element={
+                <SidebarProvider>
+                  <AppSidebar side="left" />
+                  <div className='flex flex-col h-full w-full'>
+                    <SidebarHeader />
+                    <Account />
+                  </div>
+                </SidebarProvider>
+              }
+            />
+            <Route
+              path='/meus-convites'
+              element={
+                <SidebarProvider>
+                  <AppSidebar side="left" />
+                  <div className='flex flex-col h-full w-full'>
+                    <SidebarHeader />
+                    <MyInvites />
+                  </div>
+                </SidebarProvider>
+              }
+            />
+            <Route
+              path='/consultas'
+              element={
+                <SidebarProvider>
+                  <AppSidebar side="left" />
+                  <div className='flex flex-col h-full w-full'>
+                    <SidebarHeader />
+                    <Consultations />
+                  </div>
+                </SidebarProvider>
+              }
+            />
+            <Route
+              path='/consultas/:consultationId/video-call'
+              element={<VideoCall />}
+            />
+          </Route>
         </Routes>
       </Router>
     </>
