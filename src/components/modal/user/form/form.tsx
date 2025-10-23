@@ -10,15 +10,7 @@ interface FormUserProps {
 }
 
 function FormUser({ data, change }: FormUserProps) {
-  // const filterOptions = [
-  //   {
-  //     title: 'Filtros',
-  //     items: [
-  //       { label: 'Membro', value: 'MEMBER' },
-  //       { label: 'Administrador', value: 'ADMIN' },
-  //     ],
-  //   },
-  // ];
+  // Role selection removed - patient app has single role only
   return (
     <CardContent className="space-y-2">
       <div className="space-y-1">
@@ -33,15 +25,7 @@ function FormUser({ data, change }: FormUserProps) {
         />
       </div>
 
-      {/* <div className="space-y-1">
-        <Label htmlFor="name">Perfil</Label>
-        <SelectInput
-          options={filterOptions}
-          // value={data.role
-          placeholder="Perfil de acesso"
-          onChange={(e) => change(e, 'role')}
-        />
-      </div> */}
+      {/* Role selection removed - patient app has single role only */}
 
       <div className="space-y-1">
         <Label htmlFor="email">E-mail</Label>

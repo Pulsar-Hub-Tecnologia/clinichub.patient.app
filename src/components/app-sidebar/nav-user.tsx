@@ -2,6 +2,7 @@ import {
   BadgeCheck,
   ChevronsUpDown,
   LogOut,
+  Mail,
 } from "lucide-react"
 
 import {
@@ -18,6 +19,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Badge } from "@/components/ui/badge"
 import {
   SidebarMenu,
   SidebarMenuButton,
@@ -39,7 +41,9 @@ export function NavUser({
 }) {
   const { isMobile } = useSidebar();
   const navigate = useNavigate();
-  const { signOut } = useAuth();
+  const { signOut, workspaces } = useAuth();
+
+  const pendingInvites = workspaces.filter(w => w.status === "PENDING").length;
 
   return (
     <SidebarMenu>
@@ -89,6 +93,20 @@ export function NavUser({
               >
                 <BadgeCheck />
                 Minha Conta
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={() => {
+                  navigate("/meus-convites");
+                }}
+              >
+                <Mail />
+                <span className="flex-1">Meus Convites</span>
+                {pendingInvites > 0 && (
+                  <Badge variant="destructive" className="ml-auto h-5 min-w-5 px-1.5 text-xs">
+                    {pendingInvites}
+                  </Badge>
+                )}
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />

@@ -27,10 +27,8 @@ export default function ProfessionalFilterPopover({ filters, onFiltersChange, on
     { value: "Convite Expirado", label: "Convite Expirado" },
   ]
 
-  const roleOptions = [
-    { value: "PROFESSIONAL", label: "Profissional" },
-    { value: "HYBRID", label: "Administrador/Profissional" },
-  ]
+  // Role filtering removed - not applicable for patient app
+  const roleOptions: { value: string; label: string }[] = []
 
   const sortOptions = [
     { value: "email-asc", label: "Email (A-Z)" },
@@ -63,7 +61,6 @@ export default function ProfessionalFilterPopover({ filters, onFiltersChange, on
       status: [],
       inviteDateFrom: undefined,
       inviteDateTo: undefined,
-      role: "",
       sortBy: "",
     }
     setLocalFilters(emptyFilters)
@@ -75,7 +72,6 @@ export default function ProfessionalFilterPopover({ filters, onFiltersChange, on
     return localFilters.status.length > 0 ||
       localFilters.inviteDateFrom ||
       localFilters.inviteDateTo ||
-      localFilters.role ||
       localFilters.sortBy
   }, [localFilters])
 

@@ -10,226 +10,49 @@ import {
 import { WorkspacesSwitcher } from "./workspace-switcher"
 import { NavMain } from "./nav-main"
 import { NavUser } from "./nav-user"
-import { Access, useAuth } from "@/context/auth-context"
-import { BookOpenText, BookText, CalendarDays, ChartColumn, Settings2, Stethoscope, UsersRound, WalletMinimal } from "lucide-react"
+import { useAuth } from "@/context/auth-context"
+import { BookOpenText, BookText, CalendarDays, ChartColumn } from "lucide-react"
 
-const dataAdminPersonal = {
-  navMain: [
-    {
-      title: "Dashboard",
-      url: "#",
-      icon: ChartColumn,
-      isActive: true
-    },
-    {
-      title: "Pacientes",
-      url: "/patients",
-      icon: UsersRound
-    },
-    {
-      title: "Consultas",
-      url: "#",
-      icon: CalendarDays
-    },
-    {
-      title: "Financeiro",
-      url: "#",
-      icon: WalletMinimal,
-    },
-  ],
-}
-const dataAdmin = {
+// Patient navigation menu - based on sidebar_example.png
+const patientNavData = {
   navMain: [
     {
       title: "Dashboard",
       url: "/dashboard",
-      icon: ChartColumn,
-      isActive: true
-    },
-    {
-      title: "Pacientes",
-      url: "/patients",
-      icon: UsersRound
-    },
-    {
-      title: "Profissionais",
-      url: "/professionals",
-      icon: Stethoscope
-    },
-    {
-      title: "Consultas",
-      url: "#",
-      icon: CalendarDays
-    },
-    {
-      title: "Financeiro",
-      url: "#",
-      icon: WalletMinimal,
-    },
-    {
-      title: "Configurações",
-      url: "/settings/workspace",
-      icon: Settings2,
-    },
-  ],
-}
-
-const dataAdminProfissional = {
-  navMain: [
-    {
-      title: "Dashboard",
-      url: "#",
-      icon: ChartColumn,
-      isActive: true,
-      items: [
-        {
-          title: "Meu painel",
-          url: "#",
-        },
-        {
-          title: "Geral",
-          url: "#",
-        }
-      ],
-    },
-    {
-      title: "Pacientes",
-      url: "#",
-      icon: UsersRound,
-      items: [
-        {
-          title: "Meus pacientes",
-          url: "#",
-        },
-        {
-          title: "Geral",
-          url: "/patients",
-        }
-      ],
-    },
-    {
-      title: "Consultas",
-      url: "#",
-      icon: CalendarDays,
-      items: [
-        {
-          title: "Minhas consultas",
-          url: "#",
-        },
-        {
-          title: "Geral",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Profissionais",
-      url: "/professionals",
-      icon: Stethoscope,
-    },
-    {
-      title: "Financeiro",
-      url: "#",
-      icon: WalletMinimal,
-    },
-    {
-      title: "Configurações",
-      url: "/settings/workspace",
-      icon: Settings2,
-    },
-  ],
-}
-
-const dataProfissional = {
-  navMain: [
-    {
-      title: "Dashboard",
-      url: "#",
-      icon: ChartColumn,
-      isActive: true
-    },
-    {
-      title: "Pacientes",
-      url: "/patients",
-      icon: UsersRound
-    },
-    {
-      title: "Consultas",
-      url: "#",
-      icon: CalendarDays
-    },
-    {
-      title: "Financeiro",
-      url: "#",
-      icon: WalletMinimal,
-    },
-    {
-      title: "Configurações",
-      url: "#",
-      icon: Settings2,
-    },
-  ],
-}
-
-const dataPaciente = {
-  navMain: [
-    {
-      title: "Dashboard",
-      url: "#",
       icon: ChartColumn
     },
     {
       title: "Consultas",
-      url: "#",
+      url: "/consultas",
       icon: CalendarDays
     },
     {
       title: "Autoavaliações",
-      url: "#",
+      url: "/autoavaliacoes",
       icon: BookText,
     },
     {
       title: "Diários",
-      url: "#",
+      url: "/diarios",
       icon: BookOpenText,
-    },
-    {
-      title: "Configurações",
-      url: "#",
-      icon: Settings2,
     },
   ],
 }
 
 
-export function AppSidebar({ access, ...props }: React.ComponentProps<typeof Sidebar> & { access?: Access }) {
-  const { user } = useAuth();
-  const roleDataMap: Record<string, typeof dataAdmin> = {
-    ADMIN: dataAdmin,
-    OWNER: dataAdmin,
-    HYBRID: dataAdminProfissional,
-    PROFFESSIONAL: dataProfissional,
-    PACIENTE: dataPaciente,
-  };
-
-  const data = () => {
-    if (access?.type === "PERSONAL") {
-      return dataAdminPersonal
-    }
-
-    return roleDataMap[access?.role ?? "PACIENTE"]
-  };
+export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
+  const { patient } = useAuth();
 
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <WorkspacesSwitcher workspaceSelecionado={access} />
+        <WorkspacesSwitcher />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data().navMain} />
+        <NavMain items={patientNavData.navMain} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={user!} />
+        {patient && <NavUser user={patient} />}
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

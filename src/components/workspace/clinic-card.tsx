@@ -43,7 +43,7 @@ export function ClinicCard({ name, acesso, type, picture }: ClinicCardProps) {
         </div>
       </div>
       <h3 className="text-lg font-bold text-gray-800 mb-2">{name}</h3>
-      <p className="text-sm text-gray-600 mb-4">{mapAccessLevel(acesso, type!)}</p>
+      <p className="text-sm text-gray-600 mb-4">{mapAccessLevel(acesso)}</p>
       <div className="space-y-2">
         <div className="flex items-center justify-between text-sm">
           <span className="text-gray-600">Espaço de trabalho</span>
