@@ -2,7 +2,7 @@ import { useAuth } from "@/context/auth-context";
 import AuthService from "@/services/api/auth.service";
 import { LoaderCircle } from "lucide-react";
 import { useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom"
 
 export default function ValidateEmail() {
   const navigate = useNavigate()
@@ -15,13 +15,14 @@ export default function ValidateEmail() {
 
       const response = await AuthService.validateEmail(token, email);
 
-      if (response.status === 200) {
-        // Simplified validation for patient app - no workspace selection needed
-        signIn(response.data);
-        navigate('/dashboard');
-      }
+      // Patient app has simplified auth - just patient, token, and workspaces
+      await signIn({
+        patient: response.data.patient,
+        token: response.data.token,
+        workspaces: response.data.workspaces
+      }, true);
 
-      return navigate('/login');
+      return navigate('/dashboard');
     })()
   }, [])
 
