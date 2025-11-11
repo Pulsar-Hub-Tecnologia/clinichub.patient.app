@@ -21,8 +21,12 @@ import ValidateEmail from '@/pages/public/validate-email.tsx';
 import Dashboard from '@/pages/private/dashboard.tsx';
 import Account from '@/pages/private/account.tsx';
 import MyInvites from '@/pages/private/my-invites.tsx';
-import Consultations from '@/pages/private/consultations.tsx';
+import Consultations from '@/pages/private/consultations/consultations.tsx';
 import VideoCall from '@/pages/private/video-call.tsx';
+import SelectWorkspace from '@/pages/private/consultations/create/select-workspace.tsx';
+import SelectProfessional from '@/pages/private/consultations/create/select-professional.tsx';
+import SelectSchedule from '@/pages/private/consultations/create/select-schedule.tsx';
+import ConfirmConsultation from '@/pages/private/consultations/create/confirm-consultation.tsx';
 
 export const AppRoute = () => {
   const { theme } = useTheme();
@@ -69,7 +73,7 @@ export const AppRoute = () => {
               }
             />
             <Route
-              path='/meus-convites'
+              path='/invites'
               element={
                 <SidebarProvider>
                   <AppSidebar side="left" />
@@ -81,7 +85,7 @@ export const AppRoute = () => {
               }
             />
             <Route
-              path='/consultas'
+              path='/consultations'
               element={
                 <SidebarProvider>
                   <AppSidebar side="left" />
@@ -93,8 +97,56 @@ export const AppRoute = () => {
               }
             />
             <Route
-              path='/consultas/:consultationId/video-call'
+              path='/consultations/:consultationId/video-call'
               element={<VideoCall />}
+            />
+            <Route
+              path='/consultations/create/select-workspace'
+              element={
+                <SidebarProvider>
+                  <AppSidebar side="left" />
+                  <div className='flex flex-col h-full w-full'>
+                    <SidebarHeader />
+                    <SelectWorkspace />
+                  </div>
+                </SidebarProvider>
+              }
+            />
+            <Route
+              path='/consultations/create/select-professional'
+              element={
+                <SidebarProvider>
+                  <AppSidebar side="left" />
+                  <div className='flex flex-col h-full w-full'>
+                    <SidebarHeader />
+                    <SelectProfessional />
+                  </div>
+                </SidebarProvider>
+              }
+            />
+            <Route
+              path='/consultations/create/select-schedule'
+              element={
+                <SidebarProvider>
+                  <AppSidebar side="left" />
+                  <div className='flex flex-col h-full w-full'>
+                    <SidebarHeader />
+                    <SelectSchedule />
+                  </div>
+                </SidebarProvider>
+              }
+            />
+            <Route
+              path='/consultations/create/confirm-consultation'
+              element={
+                <SidebarProvider>
+                  <AppSidebar side="left" />
+                  <div className='flex flex-col h-full w-full'>
+                    <SidebarHeader />
+                    <ConfirmConsultation />
+                  </div>
+                </SidebarProvider>
+              }
             />
           </Route>
         </Routes>

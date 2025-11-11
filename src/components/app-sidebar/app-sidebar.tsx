@@ -23,17 +23,17 @@ const patientNavData = {
     },
     {
       title: "Consultas",
-      url: "/consultas",
+      url: "/consultations",
       icon: CalendarDays
     },
     {
       title: "Autoavaliações",
-      url: "/autoavaliacoes",
+      url: "/self-assessments",
       icon: BookText,
     },
     {
       title: "Diários",
-      url: "/diarios",
+      url: "/journals",
       icon: BookOpenText,
     },
   ],

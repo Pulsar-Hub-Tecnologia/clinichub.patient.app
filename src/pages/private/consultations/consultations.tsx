@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, Search, Video } from "lucide-react";
+import { Calendar, Clock, Search, Video, Plus } from "lucide-react";
 import BasicInput from "@/components/basic-input/basic-input";
 import { format, parse } from "date-fns";
 import { getInitials } from "@/utils/formats";
@@ -50,7 +50,7 @@ export default function PatientConsultationsPage() {
   };
 
   const handleJoinVideoCall = (consultationId: string) => {
-    navigate(`/consultas/${consultationId}/video-call`);
+    navigate(`/consultations/${consultationId}/video-call`);
   };
 
   if (isLoading) {
@@ -83,6 +83,13 @@ export default function PatientConsultationsPage() {
           <h1 className="text-2xl font-bold">Minhas Consultas</h1>
           <p className="text-sm text-gray-500">Visualize suas consultas agendadas</p>
         </div>
+        <Button
+          onClick={() => navigate("/consultations/create/select-workspace")}
+          className="gap-2"
+        >
+          <Plus className="h-4 w-4" />
+          Agendar Consulta
+        </Button>
       </section>
 
       <section className="rounded-lg bg-card shadow">
@@ -99,7 +106,7 @@ export default function PatientConsultationsPage() {
               placeholder="Pesquisar por profissional ou clínica..."
               value={searchTerm}
               onChange={(e) => handleSearchChange(e.target.value)}
-              className="w-64 pl-10"
+              className="w-80"
               leftIcon={<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />}
             />
           </div>
@@ -125,9 +132,16 @@ export default function PatientConsultationsPage() {
                       <Calendar className="h-8 w-8 text-gray-400" />
                     </div>
                     <h3 className="text-lg font-medium mb-2">Nenhuma consulta encontrada</h3>
-                    <p className="text-gray-600 text-center max-w-md">
+                    <p className="text-gray-600 text-center max-w-md mb-4">
                       Você ainda não possui consultas agendadas.
                     </p>
+                    <Button
+                      onClick={() => navigate("/consultations/create/select-workspace")}
+                      className="gap-2"
+                    >
+                      <Plus className="h-4 w-4" />
+                      Agendar Minha Primeira Consulta
+                    </Button>
                   </div>
                 </TableCell>
               </TableRow>

@@ -142,6 +142,40 @@ class PatientService {
     const response = await api.post(AppRoutes.PATIENTS + "/test-access", { id })
     return response.data
   }
+
+  static async getWorkspaces(): Promise<any[]> {
+    const response = await api.get(AppRoutes.PATIENT_WORKSPACES);
+    return response.data;
+  }
+
+  static async getProfessionalsByWorkspace(workspaceId: string, search: string = ""): Promise<any[]> {
+    const params = new URLSearchParams();
+    if (search) params.append("search", search);
+
+    const response = await api.get(
+      `${AppRoutes.PATIENT_WORKSPACES}/${workspaceId}/professionals?${params.toString()}`
+    );
+    return response.data;
+  }
+
+  static async getRecentProfessionals(workspaceId: string, limit: number = 3): Promise<any[]> {
+    const response = await api.get(
+      `${AppRoutes.PATIENT_WORKSPACES}/${workspaceId}/recent-professionals?limit=${limit}`
+    );
+    return response.data;
+  }
+
+  static async createPatientConsultation(data: {
+    professionalId: string;
+    workspaceId: string;
+    consultationType: "PRESENCIAL" | "ONLINE";
+    scheduledDate: Date;
+    scheduledTime: string;
+    duration: number;
+  }): Promise<{ message: string; consultation: any }> {
+    const response = await api.post(AppRoutes.PATIENT_CONSULTATIONS + "/book", data);
+    return response.data;
+  }
 }
 
 export default PatientService;

@@ -59,7 +59,7 @@ export default function VideoCall() {
   useEffect(() => {
     if (!consultationId) {
       toast.error("ID da consulta não encontrado");
-      navigate("/consultas");
+      navigate("/consultations");
     }
   }, [consultationId, navigate]);
 
@@ -85,7 +85,7 @@ export default function VideoCall() {
   const handleLeaveCall = () => {
     setInCall(false);
     toast.info("Você saiu da videochamada");
-    navigate("/consultas");
+    navigate("/consultations");
   };
 
   if (consultationLoading) {

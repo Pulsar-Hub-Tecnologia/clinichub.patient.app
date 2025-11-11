@@ -15,12 +15,12 @@ import {
   Mic,
   MicOff,
   PhoneOff,
-  Monitor,
   Settings,
   Loader2,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getInitials } from "@/utils/formats";
+import AudioSettingsModal from "./audio-settings-modal";
 
 interface AgoraVideoCallProps {
   appId: string;
@@ -51,19 +51,19 @@ export default function AgoraVideoCall({
 }: AgoraVideoCallProps) {
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [currentMicrophoneId, setCurrentMicrophoneId] = useState<string>();
+  const [currentSpeakerId, setCurrentSpeakerId] = useState<string>();
 
-  // Usar tracks existentes se fornecidos, caso contrário criar novos
   const { localCameraTrack: newCameraTrack, isLoading: isCameraLoading } = useLocalCameraTrack(!existingCameraTrack);
   const { localMicrophoneTrack: newMicrophoneTrack, isLoading: isMicLoading } = useLocalMicrophoneTrack(!existingMicrophoneTrack);
 
   const localCameraTrack = existingCameraTrack || newCameraTrack;
   const localMicrophoneTrack = existingMicrophoneTrack || newMicrophoneTrack;
 
-  // Refs para manter referência aos tracks para cleanup
   const cameraTrackRef = useRef(localCameraTrack);
   const microphoneTrackRef = useRef(localMicrophoneTrack);
 
-  // Atualizar refs quando tracks mudarem
   useEffect(() => {
     cameraTrackRef.current = localCameraTrack;
   }, [localCameraTrack]);
@@ -115,12 +115,23 @@ export default function AgoraVideoCall({
     }
   };
 
-  const handleShareScreen = () => {
-    // TODO: Implementar compartilhamento de tela
+  const handleSettings = () => {
+    setIsSettingsOpen(true);
   };
 
-  const handleSettings = () => {
-    // TODO: Implementar configurações
+  const handleMicrophoneChange = async (deviceId: string) => {
+    if (localMicrophoneTrack) {
+      try {
+        await localMicrophoneTrack.setDevice(deviceId);
+        setCurrentMicrophoneId(deviceId);
+      } catch (error) {
+        console.error("Erro ao trocar microfone:", error);
+      }
+    }
+  };
+
+  const handleSpeakerChange = async (deviceId: string) => {
+    setCurrentSpeakerId(deviceId);
   };
 
   const handleLeave = async () => {
@@ -276,20 +287,21 @@ export default function AgoraVideoCall({
             variant="secondary"
             size="icon"
             className="h-14 w-14 rounded-full"
-            onClick={handleShareScreen}
-          >
-            <Monitor className="h-6 w-6" />
-          </Button>
-          <Button
-            variant="secondary"
-            size="icon"
-            className="h-14 w-14 rounded-full"
             onClick={handleSettings}
           >
             <Settings className="h-6 w-6" />
           </Button>
         </div>
       </div>
+
+      <AudioSettingsModal
+        open={isSettingsOpen}
+        onOpenChange={setIsSettingsOpen}
+        currentMicrophoneId={currentMicrophoneId}
+        currentSpeakerId={currentSpeakerId}
+        onMicrophoneChange={handleMicrophoneChange}
+        onSpeakerChange={handleSpeakerChange}
+      />
     </div>
   );
 }

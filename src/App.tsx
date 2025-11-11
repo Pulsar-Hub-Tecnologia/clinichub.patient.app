@@ -3,6 +3,7 @@ import Loading from '@/components/loading/loading';
 import { AuthProvider } from '@/context/auth-context';
 import { LoadingProvider } from '@/context/loading-context';
 import { ThemeProvider } from '@/context/theme-context';
+import { ConsultationProvider } from '@/context/consultation-context';
 import { AgoraProvider } from '@/context/agora-context';
 import { AppRoute } from '@/routes/app.routes';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -16,11 +17,13 @@ function App() {
       <ThemeProvider defaultTheme="light">
         <LoadingProvider>
           <AuthProvider>
-            <AgoraProvider>
-              <Loading />
-              <AppRoute />
-              {/* <ModeToggle /> */}
-            </AgoraProvider>
+            <ConsultationProvider>
+              <AgoraProvider>
+                <Loading />
+                <AppRoute />
+                {/* <ModeToggle /> */}
+              </AgoraProvider>
+            </ConsultationProvider>
           </AuthProvider>
         </LoadingProvider>
       </ThemeProvider>

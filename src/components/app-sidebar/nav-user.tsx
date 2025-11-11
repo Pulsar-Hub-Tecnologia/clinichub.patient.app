@@ -97,7 +97,7 @@ export function NavUser({
               <DropdownMenuItem
                 className="cursor-pointer"
                 onClick={() => {
-                  navigate("/meus-convites");
+                  navigate("/invites");
                 }}
               >
                 <Mail />
