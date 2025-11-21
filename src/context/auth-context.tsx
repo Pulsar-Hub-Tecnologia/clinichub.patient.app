@@ -5,8 +5,7 @@ import {
   useContext,
   ReactNode,
 } from 'react';
-import Cookies from 'js-cookie';
-import { decryptData, encryptData } from '@/utils/encrypt';
+import { CookieController, PatientCookieName } from '@/services/cookies/cookie-controller';
 import { api } from '@/services/api';
 
 // Patient authentication context - aggregates all workspaces in single login
@@ -54,11 +53,8 @@ export const AuthProvider = ({ children }: AuthProviderInterface) => {
   const [workspaces, setWorkspaces] = useState<PatientWorkspace[]>([]);
 
   useEffect(() => {
-    const authCookie = Cookies.get('clinic_patient_auth') as string;
-    const authData = authCookie
-      ? decryptData<{ patient: Patient; workspaces: PatientWorkspace[] }>(authCookie)
-      : undefined;
-    const cookieToken = Cookies.get('clinic_patient_token') as string;
+    const authData = CookieController.get(PatientCookieName.AUTH);
+    const cookieToken = CookieController.get(PatientCookieName.TOKEN);
 
     if (authData && cookieToken) {
       setPatient(authData.patient);
@@ -74,16 +70,13 @@ export const AuthProvider = ({ children }: AuthProviderInterface) => {
     setPatient(patient);
     setWorkspaces(workspaces || []);
 
-    Cookies.set('clinic_patient_token', token, { expires: remember ? 7 : undefined });
-    Cookies.set('clinic_patient_auth', encryptData({ patient, workspaces }), {
-      expires: remember ? 7 : undefined,
-      secure: true
-    });
+    CookieController.set(PatientCookieName.TOKEN, token, remember ? 7 : undefined);
+    CookieController.set(PatientCookieName.AUTH, { patient, workspaces }, remember ? 7 : undefined);
   };
 
   const signOut = () => {
-    Cookies.remove('clinic_patient_auth');
-    Cookies.remove('clinic_patient_token');
+    CookieController.remove(PatientCookieName.AUTH);
+    CookieController.remove(PatientCookieName.TOKEN);
     setToken('');
     setPatient(undefined);
     setWorkspaces([]);
@@ -116,9 +109,7 @@ export const AuthProvider = ({ children }: AuthProviderInterface) => {
 
       // Update cookie with new workspaces data
       if (patient) {
-        Cookies.set('clinic_patient_auth', encryptData({ patient, workspaces: response.data }), {
-          secure: true
-        });
+        CookieController.set(PatientCookieName.AUTH, { patient, workspaces: response.data });
       }
     } catch (error) {
       console.error('Error refreshing workspaces:', error);
