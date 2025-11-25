@@ -1,5 +1,5 @@
 import axios from 'axios';
-import Cookies from 'js-cookie';
+import { CookieController, PatientCookieName } from '@/services/cookies/cookie-controller';
 
 const baseURL = import.meta.env.VITE_BASE_URL;
 
@@ -10,7 +10,7 @@ export const api = axios.create({ //api é uma variável, não uma classe, ela d
 
 api.interceptors.request.use(
   (config) => {
-    const token = Cookies.get('clinic_patient_token');
+    const token = CookieController.get(PatientCookieName.TOKEN);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -29,8 +29,8 @@ api.interceptors.response.use(
   (error) => {
     if (error.response) {
       if (error.response.data.message === 'Token invalid') {
-        Cookies.remove('clinic_patient_token');
-        Cookies.remove('clinic_patient_auth');
+        CookieController.remove(PatientCookieName.TOKEN);
+        CookieController.remove(PatientCookieName.AUTH);
         window.location.href = '/login';
       }
     }

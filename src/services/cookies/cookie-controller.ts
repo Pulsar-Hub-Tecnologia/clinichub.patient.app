@@ -2,8 +2,6 @@ import { Patient, PatientWorkspace } from "@/context/auth-context";
 import { decryptData, encryptData } from "@/utils/encrypt";
 import Cookies from "js-cookie";
 
-// Cookies específicos para o ambiente do paciente
-// Prefixo "patient_" para evitar conflitos com cookies do ambiente profissional
 export enum PatientCookieName {
   TOKEN = "patient_token",
   AUTH = "patient_auth",

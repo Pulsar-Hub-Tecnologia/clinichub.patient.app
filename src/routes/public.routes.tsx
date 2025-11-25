@@ -1,5 +1,5 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import Cookies from 'js-cookie';
+import { CookieController, PatientCookieName } from '@/services/cookies/cookie-controller';
 
 
 export default function PublicRoute() {
@@ -14,7 +14,7 @@ export default function PublicRoute() {
   }
 
   // Acessar cookie diretamente ao invés do contexto para evitar re-renders durante signIn
-  const token = Cookies.get('clinic_patient_token');
+  const token = CookieController.get(PatientCookieName.TOKEN);
 
   return token ? <Navigate to="/dashboard" replace /> : <Outlet />;
 }

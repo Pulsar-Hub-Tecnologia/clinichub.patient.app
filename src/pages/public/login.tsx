@@ -63,7 +63,6 @@ export default function Login() {
       const response = await AuthService.login(email, password);
 
       if (response.status === 200) {
-        // Simplified login for patient app - no workspace selection needed
         await signIn(response.data, rememberAccess);
         navigate('/dashboard');
       }

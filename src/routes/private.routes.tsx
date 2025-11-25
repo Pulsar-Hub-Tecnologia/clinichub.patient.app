@@ -1,8 +1,8 @@
-import Cookies from 'js-cookie';
+import { CookieController, PatientCookieName } from '@/services/cookies/cookie-controller';
 import { Navigate, Outlet } from 'react-router-dom';
 
 export default function PrivateRoute() {
-  const token = Cookies.get("clinic_patient_token");
+  const token = CookieController.get(PatientCookieName.TOKEN);
 
   if (token) {
     return <Outlet />;
