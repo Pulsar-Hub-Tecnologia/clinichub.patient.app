@@ -89,7 +89,7 @@ export default function SelectWorkspace() {
       <div className="container mx-auto p-6 max-w-6xl">
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
           <p className="text-yellow-800">Você não possui acesso a nenhuma clínica no momento.</p>
-          <Button variant="outline" className="mt-4" onClick={() => navigate("/workspaces")}>
+          <Button variant="outline" className="mt-4" onClick={() => navigate("/invites")}>
             Ver meus convites
           </Button>
         </div>
