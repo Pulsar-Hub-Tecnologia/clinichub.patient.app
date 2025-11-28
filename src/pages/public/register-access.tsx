@@ -14,6 +14,7 @@ import { toast } from 'react-toastify';
 import { AxiosError } from 'axios';
 import AccountService from '@/services/api/account.service';
 import AuthBackground from '@/components/auth-background/auth-background';
+import { Card } from '@/components/ui/card';
 
 interface FormFields {
   email: string;
@@ -93,91 +94,89 @@ export default function RegisterAccess() {
   };
 
   return (
-    <AuthBackground>
-      <div className="flex flex-col justify-center px-4 py-4 space-y-5">
-        <AnimatedComponent type='slide-from-left' delay={100} duration='duration-500'>
-          <section id='header' className='space-y-2'>
-            <div className='space-y-2'>
-              <div className="flex items-center space-x-2">
-                <img src={ClinicHubLogo} alt="ClinicHUB Logo" className="h-10 w-10 rounded-lg" />
-                <span className="text-2xl font-bold tracking-tight">ClinicHub</span>
+    <AuthBackground animationSide='right'>
+      <AnimatedComponent type='slide-from-left' delay={100} duration='duration-500'>
+        <Card>
+          <div className="flex flex-col justify-center px-4 py-4 space-y-5">
+            <section id='header' className='space-y-2'>
+              <div className='space-y-2'>
+                <div className="flex items-center space-x-2">
+                  <img src={ClinicHubLogo} alt="ClinicHUB Logo" className="h-10 w-10 rounded-lg" />
+                  <span className="text-2xl font-bold tracking-tight">ClinicHub</span>
+                </div>
+                <p className="text-xs text-muted-foreground">Sistema de Gestão em Saúde</p>
               </div>
-              <p className="text-xs text-muted-foreground">Sistema de Gestão em Saúde</p>
-            </div>
-            <div className='space-y-1'>
-              <h1 className="text-2xl sm:text-3xl font-bold">Crie sua conta</h1>
-              <p className="text-sm">Portal do Paciente - Acesse suas consultas e histórico médico</p>
-            </div>
-          </section>
-        </AnimatedComponent>
+              <div className='space-y-1'>
+                <h1 className="text-2xl sm:text-3xl font-bold">Crie sua conta</h1>
+                <p className="text-sm">Portal do Paciente - Acesse suas consultas e histórico médico</p>
+              </div>
+            </section>
 
-        <AnimatedComponent type='slide-from-left' delay={100}>
-          <section id='progress' className="flex items-center space-x-3">
-            <div className="flex items-center space-x-2">
-              <div className="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold">1</div>
-              <span className="text-xs font-medium text-primary">Acesso</span>
-            </div>
-            <div className="w-full h-0.5 bg-gray-300"></div>
-            <div className="flex items-center space-x-2">
-              <div className="w-7 h-7 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center text-xs font-bold">2</div>
-              <span className="text-xs">Informações</span>
-            </div>
-          </section>
-        </AnimatedComponent>
+            <section id='progress' className="flex items-center space-x-3">
+              <div className="flex items-center space-x-2">
+                <div className="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold">1</div>
+                <span className="text-xs font-medium text-primary">Acesso</span>
+              </div>
+              <div className="w-full h-0.5 bg-gray-300"></div>
+              <div className="flex items-center space-x-2">
+                <div className="w-7 h-7 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center text-xs font-bold">2</div>
+                <span className="text-xs">Informações</span>
+              </div>
+            </section>
 
-        <AnimatedComponent type='slide-from-bottom' delay={200} duration='duration-700' className='space-y-4'>
-          <section id="inputs" className='space-y-3'>
-            <BasicInput
-              label="E-mail"
-              leftIcon={
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-              }
-              id="email"
-              type="email"
-              autoComplete='email'
-              placeholder="seu@email.com"
-              onChange={(e) => handleFormFields("email", e.target.value)}
-              value={formFields.email}
+            <section id="inputs" className='space-y-3'>
+              <BasicInput
+                label="E-mail"
+                leftIcon={
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                }
+                id="email"
+                type="email"
+                autoComplete='email'
+                placeholder="seu@email.com"
+                onChange={(e) => handleFormFields("email", e.target.value)}
+                value={formFields.email}
+              />
+
+              <PasswordInput
+                label="Senha"
+                value={formFields.password}
+                onChange={(e) => handleFormFields("password", e.target.value)}
+              />
+            </section>
+
+            <section id='terms-check' className='flex space-x-2 items-center pt-2'>
+              <Checkbox
+                id="terms"
+                checked={formFields.checkTerms}
+                onClick={() => handleFormFields("checkTerms", !formFields.checkTerms)}
+              />
+              <Label
+                className="text-xs font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Concordo com os
+                <span className="text-primary hover:underline ml-1 cursor-pointer" onClick={() => setOpenTerms(true)}>Termos de Uso</span> e
+                <span className="text-primary hover:underline ml-1 cursor-pointer" onClick={() => setOpenTerms(true)}>Política de Privacidade</span>
+              </Label>
+            </section>
+            <TermsModal
+              isOpen={openTerms}
+              onClose={() => setOpenTerms(false)}
+              onAccept={handleAcceptTerms}
             />
 
-            <PasswordInput
-              label="Senha"
-              value={formFields.password}
-              onChange={(e) => handleFormFields("password", e.target.value)}
-            />
-          </section>
-
-          <section id='terms-check' className='flex space-x-2 items-center pt-2'>
-            <Checkbox
-              id="terms"
-              checked={formFields.checkTerms}
-              onClick={() => handleFormFields("checkTerms", !formFields.checkTerms)}
-            />
-            <Label
-              className="text-xs font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            <Button
+              variant={'default'}
+              className="w-full py-4 text-base font-semibold text-white flex items-center justify-center space-x-2"
+              disabled={disabled_button}
+              onClick={handleSubmit}
             >
-              Concordo com os
-              <span className="text-primary hover:underline ml-1 cursor-pointer" onClick={() => setOpenTerms(true)}>Termos de Uso</span> e
-              <span className="text-primary hover:underline ml-1 cursor-pointer" onClick={() => setOpenTerms(true)}>Política de Privacidade</span>
-            </Label>
-          </section>
-          <TermsModal
-            isOpen={openTerms}
-            onClose={() => setOpenTerms(false)}
-            onAccept={handleAcceptTerms}
-          />
-
-          <Button
-            variant={'default'}
-            className="w-full py-4 text-base font-semibold text-white flex items-center justify-center space-x-2"
-            disabled={disabled_button}
-            onClick={handleSubmit}
-          >
-            Continuar
-            <ArrowRight className="h-5 w-5" />
-          </Button>
-        </AnimatedComponent>
-      </div>
+              Continuar
+              <ArrowRight className="h-5 w-5" />
+            </Button>
+          </div>
+        </Card>
+      </AnimatedComponent>
     </AuthBackground>
   );
 }

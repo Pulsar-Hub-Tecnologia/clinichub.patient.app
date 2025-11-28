@@ -82,7 +82,7 @@ export default function Login() {
   const disabled = data.email === '' || data.password === '' || emailError !== undefined;
 
   return (
-    <AuthBackground>
+    <AuthBackground animationSide='right'>
       <AnimatedComponent type='slide-from-left' delay={100} duration='duration-500'>
         <Card className='flex flex-col justify-center'>
           <CardHeader id='header'>

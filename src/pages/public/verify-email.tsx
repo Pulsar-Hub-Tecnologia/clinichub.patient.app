@@ -59,7 +59,7 @@ export default function VerifyEmail() {
   }
 
   return (
-    <AuthBackground>
+    <AuthBackground animationSide='right'>
       <section className='flex flex-col justify-center w-full py-4 space-y-2'>
         <AnimatedComponent type='slide-from-top' delay={100} duration='duration-500'>
           <section id='header'>
