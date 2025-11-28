@@ -8,8 +8,11 @@ export default function PublicRoute() {
   // Rotas de validação devem ter controle total sobre sua navegação
   const isValidationRoute = pathname.startsWith('/validate-email') || pathname.startsWith('/validate-invite');
 
-  // Não redirecionar automaticamente nas rotas de validação
-  if (isValidationRoute) {
+  // Rotas de registro por workspace também devem ser acessíveis para pacientes já autenticados
+  const isRegisterRoute = pathname.startsWith('/register/');
+
+  // Não redirecionar automaticamente nas rotas de validação e registro
+  if (isValidationRoute || isRegisterRoute) {
     return <Outlet />;
   }
 

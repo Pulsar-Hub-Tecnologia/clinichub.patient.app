@@ -17,6 +17,7 @@ import RegisterAccess from '@/pages/public/register-access.tsx';
 import RegisterInfo from '@/pages/public/register-info.tsx';
 import VerifyEmail from '@/pages/public/verify-email.tsx';
 import ValidateEmail from '@/pages/public/validate-email.tsx';
+import PatientRegisterWorkspace from '@/pages/public/patient-register-workspace.tsx';
 
 import Dashboard from '@/pages/private/dashboard.tsx';
 import Account from '@/pages/private/account.tsx';
@@ -41,6 +42,7 @@ export const AppRoute = () => {
             <Route path='/login' element={<Login />} />
             <Route path='/register-access' element={<RegisterAccess />} />
             <Route path='/register-info' element={<RegisterInfo />} />
+            <Route path='/register/:username' element={<PatientRegisterWorkspace />} />
             <Route path='/verify-email' element={<VerifyEmail />} />
             <Route path='/validate-email/:token/:email' element={<ValidateEmail />} />
             <Route path='/forgot-password' element={<ForgotPassword />} />

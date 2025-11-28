@@ -78,8 +78,6 @@ export default function RegisterInfo() {
     e.preventDefault();
     await onLoading();
 
-    // TODO: Create patient-specific registration endpoint
-    // For now, using temporary structure - will need backend endpoint
     await AccountService.createAccount({
       email: formFields.email,
       password: formFields.password,
