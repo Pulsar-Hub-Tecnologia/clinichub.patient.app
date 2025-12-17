@@ -4,13 +4,14 @@ import { Button } from '@/components/ui/button';
 import { PatientWorkspace } from '@/context/auth-context';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getInitials } from '@/utils/formats';
-import { MapPin, User, Star, MoreVertical, Calendar } from 'lucide-react';
+import { MapPin, User, Star, MoreVertical, Calendar, ArrowRight } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useNavigate } from 'react-router-dom';
 
 interface ClinicActiveCardProps extends PatientWorkspace {
   onAccess?: (workspaceId: string) => void;
@@ -33,11 +34,10 @@ const getStatusBadge = (status: string) => {
 
 export function ClinicActiveCard(props: ClinicActiveCardProps) {
   const statusBadge = getStatusBadge(props.status);
+  const navigate = useNavigate();
 
   const handleAccess = () => {
-    if (props.onAccess) {
-      props.onAccess(props.workspace_id);
-    }
+    navigate(`/workspace/${props.workspace_id}/reception`);
   };
 
   return (
@@ -105,6 +105,10 @@ export function ClinicActiveCard(props: ClinicActiveCardProps) {
 
             {/* Actions */}
             <div className="flex items-center gap-2">
+              <Button onClick={handleAccess} size="sm" className="gap-2">
+                Acessar
+                <ArrowRight className="h-4 w-4" />
+              </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -113,7 +117,7 @@ export function ClinicActiveCard(props: ClinicActiveCardProps) {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={handleAccess}>
-                    Ver detalhes
+                    Ver recepção
                   </DropdownMenuItem>
                   <DropdownMenuItem>
                     Histórico de consultas

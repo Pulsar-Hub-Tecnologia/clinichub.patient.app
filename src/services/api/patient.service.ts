@@ -148,6 +148,11 @@ class PatientService {
     return response.data;
   }
 
+  static async getWorkspaceById(workspaceId: string): Promise<any> {
+    const response = await api.get(`${AppRoutes.PATIENT_WORKSPACES}/${workspaceId}`);
+    return response.data;
+  }
+
   static async getProfessionalsByWorkspace(workspaceId: string, search: string = ""): Promise<any[]> {
     const params = new URLSearchParams();
     if (search) params.append("search", search);

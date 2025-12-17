@@ -28,6 +28,8 @@ import SelectWorkspace from '@/pages/private/consultations/create/select-workspa
 import SelectProfessional from '@/pages/private/consultations/create/select-professional.tsx';
 import SelectSchedule from '@/pages/private/consultations/create/select-schedule.tsx';
 import ConfirmConsultation from '@/pages/private/consultations/create/confirm-consultation.tsx';
+import WorkspaceReception from '@/pages/private/workspace-reception.tsx';
+import WelcomePage from '@/pages/private/onboarding/welcome.tsx';
 
 export const AppRoute = () => {
   const { theme } = useTheme();
@@ -50,6 +52,7 @@ export const AppRoute = () => {
           </Route>
 
           <Route element={<PrivateRoute />}>
+            <Route path='/welcome' element={<WelcomePage />} />
             <Route
               path='/dashboard'
               element={
@@ -146,6 +149,18 @@ export const AppRoute = () => {
                   <div className='flex flex-col h-full w-full'>
                     <SidebarHeader />
                     <ConfirmConsultation />
+                  </div>
+                </SidebarProvider>
+              }
+            />
+            <Route
+              path='/workspace/:workspaceId/reception'
+              element={
+                <SidebarProvider>
+                  <AppSidebar side="left" />
+                  <div className='flex flex-col h-full w-full'>
+                    <SidebarHeader />
+                    <WorkspaceReception />
                   </div>
                 </SidebarProvider>
               }

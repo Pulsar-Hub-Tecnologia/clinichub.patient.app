@@ -1,77 +1,137 @@
 import { useState } from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, Search, Video, Plus } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Calendar, Clock, Search, CircleCheck, CalendarDays, XCircle } from "lucide-react";
 import BasicInput from "@/components/basic-input/basic-input";
-import { format, parse } from "date-fns";
-import { getInitials } from "@/utils/formats";
-import ConsultationService, { type ConsultationFilters, type ConsultationStatus } from "@/services/api/consultation.service";
+import ConsultationService, { type ConsultationFilters as ConsultationFiltersType } from "@/services/api/consultation.service";
 import { useNavigate } from "react-router-dom";
+import StatsCard from "@/components/stats-card/stats-card";
+import TablePagination from "@/components/pagination";
+import { ErrorState, LoadingSpinner } from "@/components/pagination/skeleton";
+import SelectWorkspace from "./create/select-workspace";
+import SelectProfessional from "./create/select-professional";
+import SelectSchedule from "./create/select-schedule";
+import ConfirmConsultation from "./create/confirm-consultation";
+import { useConsultation } from "@/context/consultation-context";
+import ConsultationCard from "@/components/consultation-card/consultation-card";
+import ConsultationFilters from "@/components/consultation-filters/consultation-filters";
+
+type BookingStep = "workspace" | "professional" | "schedule" | "confirm";
 
 export default function PatientConsultationsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filters] = useState<ConsultationFilters>({});
+  const [filters, setFilters] = useState<ConsultationFiltersType>({});
+  const [activeTab, setActiveTab] = useState("scheduled");
+  const [bookingStep, setBookingStep] = useState<BookingStep>("workspace");
 
   const navigate = useNavigate();
+  const { clearConsultation } = useConsultation();
 
   const { data, isLoading, error, refetch, isFetching } = useQuery({
     queryKey: ["patient-consultations", currentPage, searchTerm, filters],
     queryFn: () => ConsultationService.getConsultations({ page: currentPage, search: searchTerm, filters }),
     placeholderData: keepPreviousData,
     retry: 2,
+    enabled: activeTab === "scheduled",
   });
+
+  const totalPending = data?.data.filter(c => c.status === "PENDING").length || 0;
+  const totalCompleted = data?.data.filter(c => c.status === "COMPLETED").length || 0;
+  const totalCanceled = data?.data.filter(c => c.status === "CANCELED").length || 0;
+  const totalConfirmed = data?.data.filter(c => c.status === "CONFIRMED").length || 0;
+
+  const cards = [
+    {
+      title: "Consultas Pendentes",
+      value: totalPending,
+      icon: Clock,
+      bgColor: "bg-yellow-50",
+      iconColor: "text-yellow-600",
+      change: "+12%",
+    },
+    {
+      title: "Consultas Finalizadas",
+      value: totalCompleted,
+      icon: CircleCheck,
+      bgColor: "bg-green-50",
+      iconColor: "text-green-600",
+      change: "+8%",
+    },
+    {
+      title: "Consultas Canceladas",
+      value: totalCanceled,
+      icon: XCircle,
+      bgColor: "bg-red-50",
+      iconColor: "text-red-600",
+      change: "-3%",
+    },
+    {
+      title: "Consultas Confirmadas",
+      value: totalConfirmed,
+      icon: CalendarDays,
+      bgColor: "bg-blue-50",
+      iconColor: "text-blue-600",
+      change: "+5%",
+    },
+  ];
 
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
     setCurrentPage(1);
   };
 
-  const getStatusBadge = (status: ConsultationStatus) => {
-    switch (status) {
-      case "CONFIRMED":
-        return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Confirmada</Badge>;
-      case "PENDING":
-        return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">Pendente</Badge>;
-      case "CANCELED":
-        return <Badge className="bg-red-100 text-red-800 hover:bg-red-100">Cancelada</Badge>;
-      case "COMPLETED":
-        return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">Finalizada</Badge>;
-      default:
-        return <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-100">{status}</Badge>;
-    }
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
-  const canJoinVideoCall = (consultationType: string, status: ConsultationStatus) => {
-    return consultationType === "ONLINE" && status !== "CANCELED" && status !== "COMPLETED";
+  const handleFilterChange = (newFilters: any) => {
+    setFilters(newFilters);
+    setCurrentPage(1);
+  };
+
+  const handleClearFilters = () => {
+    setFilters({});
+    setCurrentPage(1);
   };
 
   const handleJoinVideoCall = (consultationId: string) => {
     navigate(`/consultations/${consultationId}/video-call`);
   };
 
-  if (isLoading) {
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    if (value === "schedule") {
+      clearConsultation();
+      setBookingStep("workspace");
+    }
+  };
+
+  const renderBookingStep = () => {
+    switch (bookingStep) {
+      case "workspace":
+        return <SelectWorkspace onNext={() => setBookingStep("professional")} onBack={() => setActiveTab("scheduled")} />;
+      case "professional":
+        return <SelectProfessional onNext={() => setBookingStep("schedule")} onBack={() => setBookingStep("workspace")} />;
+      case "schedule":
+        return <SelectSchedule onNext={() => setBookingStep("confirm")} onBack={() => setBookingStep("professional")} />;
+      case "confirm":
+        return <ConfirmConsultation onBack={() => setBookingStep("schedule")} onSuccess={() => {
+          setActiveTab("scheduled");
+          setBookingStep("workspace");
+          refetch();
+        }} />;
+      default:
+        return null;
+    }
+  };
+
+  if (isLoading && activeTab === "scheduled") {
     return (
       <div className="flex min-h-screen w-full flex-col items-center justify-center bg-background">
         <Clock className="h-8 w-8 animate-spin text-primary" />
         <p className="mt-4 text-sm text-gray-500">Carregando suas consultas...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex min-h-screen w-full flex-col items-center justify-center bg-background gap-4">
-        <p className="text-red-500">Erro ao carregar consultas</p>
-        <button
-          onClick={() => refetch()}
-          className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90"
-        >
-          Tentar novamente
-        </button>
       </div>
     );
   }
@@ -81,131 +141,106 @@ export default function PatientConsultationsPage() {
       <section id="header" className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Minhas Consultas</h1>
-          <p className="text-sm text-gray-500">Visualize suas consultas agendadas</p>
+          <p className="text-sm text-gray-500">Visualize e gerencie todas as suas consultas agendadas</p>
         </div>
-        <Button
-          onClick={() => navigate("/consultations/create/select-workspace")}
-          className="gap-2"
-        >
-          <Plus className="h-4 w-4" />
-          Agendar Consulta
-        </Button>
       </section>
 
-      <section className="rounded-lg bg-card shadow">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-border px-6 py-4">
-          <h2 className="text-lg font-medium">Lista de Consultas</h2>
-          <div className="flex items-center gap-3">
-            {isFetching && !isLoading && (
-              <div className="flex items-center gap-2 text-sm text-gray-500">
-                <Clock className="h-4 w-4 animate-spin" />
-                Atualizando...
-              </div>
-            )}
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+        <TabsList className="inline-flex h-auto items-center justify-start w-full rounded-none border-b bg-transparent p-0">
+          <TabsTrigger
+            value="scheduled"
+            className="inline-flex items-center justify-center whitespace-nowrap rounded-none border-b-2 border-transparent bg-transparent px-4 py-3 text-sm font-medium ring-offset-transparent transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none"
+          >
+            Agendadas
+          </TabsTrigger>
+          <TabsTrigger
+            value="schedule"
+            className="inline-flex items-center justify-center whitespace-nowrap rounded-none border-b-2 border-transparent bg-transparent px-4 py-3 text-sm font-medium ring-offset-transparent transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none"
+          >
+            Agendar
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="scheduled" className="space-y-5 mt-5">
+          <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {cards.map((card) => (
+              <StatsCard key={card.title} card={card} isLoading={isLoading} />
+            ))}
+          </section>
+
+          <ConsultationFilters
+            onFilterChange={handleFilterChange}
+            onClearFilters={handleClearFilters}
+          />
+
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              {isFetching && !isLoading && (
+                <LoadingSpinner message="Atualizando..." />
+              )}
+            </div>
             <BasicInput
               placeholder="Pesquisar por profissional ou clínica..."
               value={searchTerm}
               onChange={(e) => handleSearchChange(e.target.value)}
-              className="w-80"
+              className="max-w-md w-80"
               leftIcon={<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />}
             />
           </div>
-        </div>
 
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="px-6">Clínica</TableHead>
-              <TableHead>Profissional</TableHead>
-              <TableHead>Data/Hora</TableHead>
-              <TableHead>Tipo</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Ações</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {data?.data.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={6} className="p-0">
-                  <div className="flex flex-col items-center justify-center py-12 px-6">
-                    <div className="rounded-full bg-background p-3 mb-4">
-                      <Calendar className="h-8 w-8 text-gray-400" />
-                    </div>
-                    <h3 className="text-lg font-medium mb-2">Nenhuma consulta encontrada</h3>
-                    <p className="text-gray-600 text-center max-w-md mb-4">
-                      Você ainda não possui consultas agendadas.
-                    </p>
-                    <Button
-                      onClick={() => navigate("/consultations/create/select-workspace")}
-                      className="gap-2"
-                    >
-                      <Plus className="h-4 w-4" />
-                      Agendar Minha Primeira Consulta
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ) : (
-              data?.data.map((consultation, index) => (
-                <TableRow key={`${consultation.id}-${index}`}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src={consultation.workspace.picture} />
-                        <AvatarFallback>{getInitials(consultation.workspace.name)}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <div className="font-medium">{consultation.workspace.name}</div>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src={consultation.professional.picture} />
-                        <AvatarFallback>{getInitials(consultation.professional.name)}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <div className="font-medium">{consultation.professional.name}</div>
-                        {consultation.professional.especiality && (
-                          <div className="text-xs text-gray-500">{consultation.professional.especiality}</div>
-                        )}
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="text-sm">
-                      <div>{format(consultation.scheduled_date, "dd/MM/yyyy")}</div>
-                      <div className="text-xs text-gray-500">
-                        {format(parse(consultation.scheduled_time, "HH:mm:ss", consultation.scheduled_date), "HH:mm")} ({consultation.duration}min)
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline">
-                      {consultation.consultation_type === "PRESENCIAL" ? "Presencial" : "Online"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{getStatusBadge(consultation.status)}</TableCell>
-                  <TableCell>
-                    {canJoinVideoCall(consultation.consultation_type, consultation.status) && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="gap-2 text-primary hover:text-primary hover:bg-primary/10"
-                        onClick={() => handleJoinVideoCall(consultation.id)}
-                      >
-                        <Video className="h-4 w-4" />
-                        Entrar
-                      </Button>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </section>
+          {error ? (
+            <ErrorState onRetry={() => refetch()} />
+          ) : isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Clock className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : data?.data.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 px-6 bg-white rounded-lg border">
+              <div className="rounded-full bg-gray-100 p-4 mb-4">
+                <Calendar className="h-12 w-12 text-gray-400" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Nenhuma consulta encontrada</h3>
+              <p className="text-gray-600 text-center max-w-md mb-6">
+                Você ainda não possui consultas agendadas.
+              </p>
+              <Button
+                onClick={() => setActiveTab("schedule")}
+                size="lg"
+                className="gap-2"
+              >
+                <Calendar className="h-5 w-5" />
+                Agendar Minha Primeira Consulta
+              </Button>
+            </div>
+          ) : (
+            <>
+              <div className="space-y-4">
+                {data?.data.map((consultation) => (
+                  <ConsultationCard
+                    key={consultation.id}
+                    consultation={consultation}
+                    onJoinVideoCall={handleJoinVideoCall}
+                  />
+                ))}
+              </div>
+              {data && data.total > 10 && (
+                <TablePagination
+                  currentPage={currentPage}
+                  totalPages={data.totalPages}
+                  totalItems={data.total}
+                  onPageChange={handlePageChange}
+                />
+              )}
+            </>
+          )}
+        </TabsContent>
+
+        <TabsContent value="schedule" className="mt-5">
+          <div className="bg-background">
+            {renderBookingStep()}
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

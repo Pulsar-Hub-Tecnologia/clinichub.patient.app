@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Search, Clock, CheckCircle2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { useConsultation } from "@/context/consultation-context";
 import { toast } from "react-toastify";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -10,17 +9,21 @@ import { Input } from "@/components/ui/input";
 import { useQuery } from "@tanstack/react-query";
 import PatientService from "@/services/api/patient.service";
 
-export default function SelectProfessional() {
+interface SelectProfessionalProps {
+  onNext: () => void;
+  onBack: () => void;
+}
+
+export default function SelectProfessional({ onNext, onBack }: SelectProfessionalProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const { setProfessional, consultationData, isProfessionalSelected, isWorkspaceSelected, clearConsultation } = useConsultation();
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (!isWorkspaceSelected) {
       toast.error("Selecione uma clínica primeiro.");
-      navigate("/consultations/create/select-workspace");
+      onBack();
     }
-  }, [isWorkspaceSelected, navigate]);
+  }, [isWorkspaceSelected, onBack]);
 
   useEffect(() => {
     return () => {
@@ -60,14 +63,10 @@ export default function SelectProfessional() {
 
   const handleNext = () => {
     if (isProfessionalSelected) {
-      navigate("/consultations/create/select-schedule");
+      onNext();
     } else {
       toast.error("Selecione um profissional.");
     }
-  };
-
-  const handleBack = () => {
-    navigate("/consultations/create/select-workspace");
   };
 
   const renderProfessionalCard = (professional: any, isRecent: boolean = false) => {
@@ -238,7 +237,7 @@ export default function SelectProfessional() {
       </section>
 
       <div className="flex justify-between gap-4 pt-4">
-        <Button variant="outline" onClick={handleBack}>
+        <Button variant="outline" onClick={onBack}>
           <ChevronLeft className="h-4 w-4 mr-2" />
           Voltar
         </Button>

@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Video, Building } from "lucide-react";
 import { format, addDays, isSameDay, addMonths, getMonth, getYear, parse } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { useNavigate } from "react-router-dom";
 import { useConsultation } from "@/context/consultation-context";
 import { toast } from "react-toastify";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -25,7 +24,12 @@ const timeSlots = [
   { time: "16:00", available: true },
 ];
 
-export default function SelectSchedule() {
+interface SelectScheduleProps {
+  onNext: () => void;
+  onBack: () => void;
+}
+
+export default function SelectSchedule({ onNext, onBack }: SelectScheduleProps) {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [selectedMonth, setSelectedMonth] = useState(format(new Date(), "MMMM yyyy", { locale: ptBR }));
@@ -33,7 +37,6 @@ export default function SelectSchedule() {
   const [weekDays, setWeekDays] = useState<Date[]>([]);
   const [availableMonths, setAvailableMonths] = useState<{ value: string; label: string }[]>([]);
 
-  const navigate = useNavigate();
   const {
     isProfessionalSelected,
     isWorkspaceSelected,
@@ -46,9 +49,9 @@ export default function SelectSchedule() {
   useEffect(() => {
     if (!isWorkspaceSelected || !isProfessionalSelected) {
       toast.error("Complete as etapas anteriores primeiro.");
-      navigate("/consultations/create/select-workspace");
+      onBack();
     }
-  }, [isWorkspaceSelected, isProfessionalSelected, navigate]);
+  }, [isWorkspaceSelected, isProfessionalSelected, onBack]);
 
   useEffect(() => {
     const days = Array.from({ length: 4 }, (_, i) => addDays(new Date(), i));
@@ -150,20 +153,12 @@ export default function SelectSchedule() {
     if (selectedDate && selectedTime && consultationType) {
       setSchedule(selectedDate, selectedTime, 50);
       setConsultationTypeContext(consultationType);
-      navigate("/consultations/create/confirm-consultation");
+      onNext();
     } else {
       toast.error("Por favor, selecione data, horário e modalidade.");
     }
   };
 
-  const handleBack = () => {
-    // Se for workspace PERSONAL, voltar para select-workspace, caso contrário para select-professional
-    if (consultationData.workspace?.type === "PERSONAL") {
-      navigate("/consultations/create/select-workspace");
-    } else {
-      navigate("/consultations/create/select-professional");
-    }
-  };
 
   const selectedProfessional = consultationData.professional;
 
@@ -344,7 +339,7 @@ export default function SelectSchedule() {
       </div>
 
       <div className="flex justify-between gap-4">
-        <Button variant="outline" onClick={handleBack}>
+        <Button variant="outline" onClick={onBack}>
           <ChevronLeft className="h-4 w-4 mr-2" />
           Voltar
         </Button>

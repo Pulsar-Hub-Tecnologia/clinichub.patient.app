@@ -28,6 +28,7 @@ export interface AccountData {
   picture?: string;
   has_reset_pass: boolean;
   has_verified_email: boolean;
+  has_onboarding: boolean;
   password_hash: string;
   token_reset_password?: string;
   reset_password_expires?: string;
@@ -60,6 +61,7 @@ class AccountService {
         bio: "",
         has_reset_pass: false,
         has_verified_email: false,
+        has_onboarding: false,
         password_hash: "",
         reset_password_expires: undefined,
         token_reset_password: undefined,

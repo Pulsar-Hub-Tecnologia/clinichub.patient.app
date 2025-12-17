@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
 import { useConsultation } from "@/context/consultation-context";
 import { toast } from "react-toastify";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -20,8 +19,12 @@ function calculateEndTime(startTime: string, duration: number): string {
   return `${String(endHours).padStart(2, "0")}:${String(endMinutes).padStart(2, "0")}`;
 }
 
-export default function ConfirmConsultation() {
-  const navigate = useNavigate();
+interface ConfirmConsultationProps {
+  onBack: () => void;
+  onSuccess: () => void;
+}
+
+export default function ConfirmConsultation({ onBack, onSuccess }: ConfirmConsultationProps) {
   const {
     consultationData,
     isProfessionalSelected,
@@ -38,9 +41,9 @@ export default function ConfirmConsultation() {
   useEffect(() => {
     if (!isWorkspaceSelected || !isProfessionalSelected || !isScheduleSelected) {
       toast.error("Complete todas as etapas anteriores primeiro.");
-      navigate("/consultations/create/select-workspace");
+      onBack();
     }
-  }, [isWorkspaceSelected, isProfessionalSelected, isScheduleSelected, navigate]);
+  }, [isWorkspaceSelected, isProfessionalSelected, isScheduleSelected, onBack]);
 
   useEffect(() => {
     return () => {
@@ -82,7 +85,8 @@ export default function ConfirmConsultation() {
       });
 
       toast.success("Consulta agendada com sucesso!");
-      await navigate("/consultations");
+      clearConsultation();
+      onSuccess();
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Erro ao agendar consulta. Tente novamente.");
     } finally {
@@ -90,9 +94,6 @@ export default function ConfirmConsultation() {
     }
   };
 
-  const handleBack = () => {
-    navigate("/consultations/create/select-schedule");
-  };
 
   const selectedProfessional = consultationData.professional;
   const selectedWorkspace = consultationData.workspace;
@@ -299,7 +300,7 @@ export default function ConfirmConsultation() {
       </div>
 
       <div className="flex justify-between gap-4">
-        <Button variant="outline" onClick={handleBack} disabled={isSubmitting}>
+        <Button variant="outline" onClick={onBack} disabled={isSubmitting}>
           <ChevronLeft className="h-4 w-4 mr-2" />
           Voltar
         </Button>

@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronRight, Building, User, Check } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { useConsultation } from "@/context/consultation-context";
 import { toast } from "react-toastify";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -9,9 +8,13 @@ import { getInitials } from "@/utils/formats";
 import { useQuery } from "@tanstack/react-query";
 import PatientService from "@/services/api/patient.service";
 
-export default function SelectWorkspace() {
+interface SelectWorkspaceProps {
+  onNext: () => void;
+  onBack: () => void;
+}
+
+export default function SelectWorkspace({ onNext, onBack }: SelectWorkspaceProps) {
   const { setWorkspace, setProfessional, consultationData, isWorkspaceSelected, clearConsultation } = useConsultation();
-  const navigate = useNavigate();
 
   const { data: workspaces, isLoading, error } = useQuery({
     queryKey: ["patient-workspaces-booking"],
@@ -50,18 +53,14 @@ export default function SelectWorkspace() {
           regional_council_number: workspace.owner.regional_council_number,
           bio: workspace.owner.bio,
         });
-        navigate("/consultations/create/select-schedule");
+        onNext();
       } else {
         toast.error("Dados do profissional não encontrados");
-        navigate("/consultations/create/select-professional");
+        onNext();
       }
     } else {
-      navigate("/consultations/create/select-professional");
+      onNext();
     }
-  };
-
-  const handleBack = () => {
-    navigate("/consultations");
   };
 
   if (isLoading) {
@@ -89,8 +88,8 @@ export default function SelectWorkspace() {
       <div className="container mx-auto p-6 max-w-6xl">
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
           <p className="text-yellow-800">Você não possui acesso a nenhuma clínica no momento.</p>
-          <Button variant="outline" className="mt-4" onClick={() => navigate("/invites")}>
-            Ver meus convites
+          <Button variant="outline" className="mt-4" onClick={onBack}>
+            Voltar
           </Button>
         </div>
       </div>
@@ -182,11 +181,11 @@ export default function SelectWorkspace() {
       </div>
 
       <div className="flex justify-between gap-4 pt-4">
-        <Button variant="outline" onClick={handleBack}>
+        <Button variant="outline" onClick={onBack}>
           Cancelar
         </Button>
         <Button
-          onClick={() => navigate("/consultations/create/select-professional")}
+          onClick={onNext}
           disabled={!isWorkspaceSelected}
         >
           Próximo
