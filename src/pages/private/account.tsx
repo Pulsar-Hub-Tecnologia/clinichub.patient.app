@@ -32,6 +32,7 @@ const defaultAccountData: AccountData = {
   bio: "",
   has_reset_pass: false,
   has_verified_email: false,
+  has_onboarding: false,
   password_hash: "",
   reset_password_expires: undefined,
   token_reset_password: undefined,

@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useNavigate } from "react-router-dom";
 
 const timeSlots = [
   { time: "09:00", available: true },
@@ -25,11 +26,12 @@ const timeSlots = [
 ];
 
 interface SelectScheduleProps {
-  onNext: () => void;
-  onBack: () => void;
+  onNext?: () => void;
+  onBack?: () => void;
 }
 
 export default function SelectSchedule({ onNext, onBack }: SelectScheduleProps) {
+  const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [selectedMonth, setSelectedMonth] = useState(format(new Date(), "MMMM yyyy", { locale: ptBR }));
@@ -49,9 +51,9 @@ export default function SelectSchedule({ onNext, onBack }: SelectScheduleProps) 
   useEffect(() => {
     if (!isWorkspaceSelected || !isProfessionalSelected) {
       toast.error("Complete as etapas anteriores primeiro.");
-      onBack();
+      onBack ? onBack() : navigate("/consultations/create/select-professional");
     }
-  }, [isWorkspaceSelected, isProfessionalSelected, onBack]);
+  }, [isWorkspaceSelected, isProfessionalSelected, onBack, navigate]);
 
   useEffect(() => {
     const days = Array.from({ length: 4 }, (_, i) => addDays(new Date(), i));
@@ -153,7 +155,7 @@ export default function SelectSchedule({ onNext, onBack }: SelectScheduleProps) 
     if (selectedDate && selectedTime && consultationType) {
       setSchedule(selectedDate, selectedTime, 50);
       setConsultationTypeContext(consultationType);
-      onNext();
+      onNext ? onNext() : navigate("/consultations/create/confirm-consultation");
     } else {
       toast.error("Por favor, selecione data, horário e modalidade.");
     }
@@ -339,7 +341,7 @@ export default function SelectSchedule({ onNext, onBack }: SelectScheduleProps) 
       </div>
 
       <div className="flex justify-between gap-4">
-        <Button variant="outline" onClick={onBack}>
+        <Button variant="outline" onClick={() => onBack ? onBack() : navigate("/consultations/create/select-professional")}>
           <ChevronLeft className="h-4 w-4 mr-2" />
           Voltar
         </Button>

@@ -8,22 +8,24 @@ import { getInitials } from "@/utils/formats";
 import { Input } from "@/components/ui/input";
 import { useQuery } from "@tanstack/react-query";
 import PatientService from "@/services/api/patient.service";
+import { useNavigate } from "react-router-dom";
 
 interface SelectProfessionalProps {
-  onNext: () => void;
-  onBack: () => void;
+  onNext?: () => void;
+  onBack?: () => void;
 }
 
 export default function SelectProfessional({ onNext, onBack }: SelectProfessionalProps) {
   const [searchTerm, setSearchTerm] = useState("");
+  const navigate = useNavigate();
   const { setProfessional, consultationData, isProfessionalSelected, isWorkspaceSelected, clearConsultation } = useConsultation();
 
   useEffect(() => {
     if (!isWorkspaceSelected) {
       toast.error("Selecione uma clínica primeiro.");
-      onBack();
+      onBack ? onBack() : navigate("/consultations/create/select-workspace");
     }
-  }, [isWorkspaceSelected, onBack]);
+  }, [isWorkspaceSelected, onBack, navigate]);
 
   useEffect(() => {
     return () => {
@@ -63,7 +65,7 @@ export default function SelectProfessional({ onNext, onBack }: SelectProfessiona
 
   const handleNext = () => {
     if (isProfessionalSelected) {
-      onNext();
+      onNext ? onNext() : navigate("/consultations/create/select-schedule");
     } else {
       toast.error("Selecione um profissional.");
     }
@@ -237,7 +239,7 @@ export default function SelectProfessional({ onNext, onBack }: SelectProfessiona
       </section>
 
       <div className="flex justify-between gap-4 pt-4">
-        <Button variant="outline" onClick={onBack}>
+        <Button variant="outline" onClick={() => onBack ? onBack() : navigate("/consultations/create/select-workspace")}>
           <ChevronLeft className="h-4 w-4 mr-2" />
           Voltar
         </Button>

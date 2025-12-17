@@ -7,13 +7,15 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getInitials } from "@/utils/formats";
 import { useQuery } from "@tanstack/react-query";
 import PatientService from "@/services/api/patient.service";
+import { useNavigate } from "react-router-dom";
 
 interface SelectWorkspaceProps {
-  onNext: () => void;
-  onBack: () => void;
+  onNext?: () => void;
+  onBack?: () => void;
 }
 
 export default function SelectWorkspace({ onNext, onBack }: SelectWorkspaceProps) {
+  const navigate = useNavigate();
   const { setWorkspace, setProfessional, consultationData, isWorkspaceSelected, clearConsultation } = useConsultation();
 
   const { data: workspaces, isLoading, error } = useQuery({
@@ -53,13 +55,13 @@ export default function SelectWorkspace({ onNext, onBack }: SelectWorkspaceProps
           regional_council_number: workspace.owner.regional_council_number,
           bio: workspace.owner.bio,
         });
-        onNext();
+        onNext ? onNext() : navigate("/consultations/create/select-professional");
       } else {
         toast.error("Dados do profissional não encontrados");
-        onNext();
+        onNext ? onNext() : navigate("/consultations/create/select-professional");
       }
     } else {
-      onNext();
+      onNext ? onNext() : navigate("/consultations/create/select-professional");
     }
   };
 
@@ -88,7 +90,7 @@ export default function SelectWorkspace({ onNext, onBack }: SelectWorkspaceProps
       <div className="container mx-auto p-6 max-w-6xl">
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
           <p className="text-yellow-800">Você não possui acesso a nenhuma clínica no momento.</p>
-          <Button variant="outline" className="mt-4" onClick={onBack}>
+          <Button variant="outline" className="mt-4" onClick={() => onBack ? onBack() : navigate("/consultations")}>
             Voltar
           </Button>
         </div>
@@ -181,11 +183,11 @@ export default function SelectWorkspace({ onNext, onBack }: SelectWorkspaceProps
       </div>
 
       <div className="flex justify-between gap-4 pt-4">
-        <Button variant="outline" onClick={onBack}>
+        <Button variant="outline" onClick={() => onBack ? onBack() : navigate("/consultations")}>
           Cancelar
         </Button>
         <Button
-          onClick={onNext}
+          onClick={() => onNext ? onNext() : navigate("/consultations/create/select-professional")}
           disabled={!isWorkspaceSelected}
         >
           Próximo

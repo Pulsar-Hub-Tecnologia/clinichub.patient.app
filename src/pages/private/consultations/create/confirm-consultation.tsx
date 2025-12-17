@@ -10,6 +10,7 @@ import { ptBR } from "date-fns/locale";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import PatientService from "@/services/api/patient.service";
+import { useNavigate } from "react-router-dom";
 
 function calculateEndTime(startTime: string, duration: number): string {
   const [hours, minutes] = startTime.split(":").map(Number);
@@ -20,11 +21,12 @@ function calculateEndTime(startTime: string, duration: number): string {
 }
 
 interface ConfirmConsultationProps {
-  onBack: () => void;
-  onSuccess: () => void;
+  onBack?: () => void;
+  onSuccess?: () => void;
 }
 
 export default function ConfirmConsultation({ onBack, onSuccess }: ConfirmConsultationProps) {
+  const navigate = useNavigate();
   const {
     consultationData,
     isProfessionalSelected,
@@ -41,9 +43,9 @@ export default function ConfirmConsultation({ onBack, onSuccess }: ConfirmConsul
   useEffect(() => {
     if (!isWorkspaceSelected || !isProfessionalSelected || !isScheduleSelected) {
       toast.error("Complete todas as etapas anteriores primeiro.");
-      onBack();
+      onBack ? onBack() : navigate("/consultations/create/select-schedule");
     }
-  }, [isWorkspaceSelected, isProfessionalSelected, isScheduleSelected, onBack]);
+  }, [isWorkspaceSelected, isProfessionalSelected, isScheduleSelected, onBack, navigate]);
 
   useEffect(() => {
     return () => {
@@ -86,7 +88,7 @@ export default function ConfirmConsultation({ onBack, onSuccess }: ConfirmConsul
 
       toast.success("Consulta agendada com sucesso!");
       clearConsultation();
-      onSuccess();
+      onSuccess ? onSuccess() : navigate("/consultations");
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Erro ao agendar consulta. Tente novamente.");
     } finally {
@@ -300,7 +302,7 @@ export default function ConfirmConsultation({ onBack, onSuccess }: ConfirmConsul
       </div>
 
       <div className="flex justify-between gap-4">
-        <Button variant="outline" onClick={onBack} disabled={isSubmitting}>
+        <Button variant="outline" onClick={() => onBack ? onBack() : navigate("/consultations/create/select-schedule")} disabled={isSubmitting}>
           <ChevronLeft className="h-4 w-4 mr-2" />
           Voltar
         </Button>
