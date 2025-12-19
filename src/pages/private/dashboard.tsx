@@ -60,6 +60,15 @@ export default function Dashboard() {
     }
   };
 
+  const getStatusBorderColor = (status: string) => {
+    switch (status) {
+      case 'CONFIRMED': return 'bg-green-500';
+      case 'PENDING': return 'bg-orange-500';
+      case 'CANCELED': return 'bg-red-500';
+      default: return 'bg-gray-300';
+    }
+  };
+
   const getStatusLabel = (status: string) => {
     switch (status) {
       case 'CONFIRMED': return 'Confirmado';
@@ -70,15 +79,15 @@ export default function Dashboard() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-50/50 p-6 md:p-10 space-y-8">
+    <main className="min-h-screen bg-gray-50/50 p-6 space-y-8">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-[#3b0764]">Bem-vinda, {account?.name?.split(' ')[0] || 'Paciente'}!</h1>
-        <p className="text-gray-500 mt-1">Aqui está um resumo das suas atividades de hoje</p>
+      <div className='flex-1 w-full'>
+        <h1 className="text-3xl font-bold text-gray-900">Bem-vindo(a), {account?.name?.split(' ')[0] || 'Paciente'}!</h1>
+        <p className="text-gray-500">Aqui está um resumo das suas atividades de hoje</p>
       </div>
 
       {/* Feeling Section */}
-      <Card className="border-none shadow-sm">
+      <Card className="border-none shadow-sm w-full">
         <CardContent className="p-6 flex flex-col md:flex-row items-center gap-6">
           <div className="h-12 w-12 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center flex-shrink-0 shadow-md">
             <span className="text-2xl">♥</span>
@@ -87,9 +96,9 @@ export default function Dashboard() {
             <h3 className="font-semibold text-gray-900 mb-3">Como você está se sentindo hoje?</h3>
             <div className="flex gap-4 items-center">
               <div className="flex gap-2">
-                {['🙂', '😐', 'bh', '😰'].map((emoji, i) => (
+                {['🙂', '😐', '😔', '😰'].map((emoji, i) => (
                   <button key={i} className="h-10 w-10 rounded-full bg-yellow-50 hover:bg-yellow-100 flex items-center justify-center text-xl transition-colors">
-                    {emoji === 'bh' ? '😔' : emoji}
+                    {emoji}
                   </button>
                 ))}
               </div>
@@ -122,7 +131,7 @@ export default function Dashboard() {
             dashboardData.upcoming_consultations.map((consultation) => (
               <Card key={consultation.id} className="border-none shadow-sm overflow-hidden">
                 <div className="flex items-stretch">
-                  <div className={`w-2 ${consultation.status === 'CONFIRMED' ? 'bg-[#3b0764]' : 'bg-teal-400'}`}></div>
+                  <div className={`w-2 ${getStatusBorderColor(consultation.status)}`}></div>
                   <CardContent className="flex-1 p-4 flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       <div className="h-12 w-12 rounded-lg bg-purple-100 flex items-center justify-center text-[#3b0764]">
