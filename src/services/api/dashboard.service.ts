@@ -15,14 +15,35 @@ export interface UpcomingConsultation {
   workspace_picture?: string;
   professional_name: string;
   professional_picture?: string;
-  professional_especiality?: string;
-  date: string;
-  status: 'SCHEDULED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW';
+  professional_specialty?: string;
+  scheduled_date: string;
+  scheduled_time: string;
+  consultation_type: "PRESENCIAL" | "ONLINE";
+  status: 'CONFIRMED' | 'PENDING' | 'CANCELED' | 'COMPLETED';
+}
+
+export interface PlanSpecialty {
+  name: string;
+  remaining: number;
+}
+
+export interface ActivePlan {
+  id: string;
+  workspace_name: string;
+  plan_name: string;
+  status: "ACTIVE" | "EXPIRING_SOON" | "EXPIRED";
+  total_credits: number;
+  used_credits: number;
+  remaining_credits: number;
+  usage_percentage: number;
+  valid_until: string;
+  specialties: PlanSpecialty[];
 }
 
 export interface DashboardData {
   stats: DashboardStats;
   upcoming_consultations: UpcomingConsultation[];
+  active_plans: ActivePlan[];
 }
 
 class DashboardService {
@@ -41,6 +62,7 @@ class DashboardService {
           total_workspaces: 0,
         },
         upcoming_consultations: [],
+        active_plans: [],
       };
     }
   }

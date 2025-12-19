@@ -1,11 +1,17 @@
+import { useState, useEffect, useRef } from 'react';
 import { CookieController, PatientCookieName } from '@/services/cookies/cookie-controller';
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import AccountService from '@/services/api/account.service';
+import ConsultationService from '@/services/api/consultation.service';
+import { UpcomingConsultationModal } from '@/components/modal/upcoming-consultation-modal';
 
 export default function PrivateRoute() {
   const token = CookieController.get(PatientCookieName.TOKEN);
   const location = useLocation();
+  const navigate = useNavigate();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const lastConsultationIdRef = useRef<string | null>(null);
 
   const { data: account, isLoading } = useQuery({
     queryKey: ['account'],
@@ -13,6 +19,28 @@ export default function PrivateRoute() {
     enabled: !!token,
     retry: false,
   });
+
+  const { data: upcomingConsultation } = useQuery({
+    queryKey: ['upcoming-consultation'],
+    queryFn: ConsultationService.getUpcomingConsultation,
+    enabled: !!token && !!account,
+    refetchInterval: 60000, // 1 minute
+    refetchIntervalInBackground: true,
+  });
+
+  useEffect(() => {
+    if (upcomingConsultation && upcomingConsultation.id !== lastConsultationIdRef.current) {
+      setIsModalOpen(true);
+      lastConsultationIdRef.current = upcomingConsultation.id;
+    }
+  }, [upcomingConsultation]);
+
+  const handleJoin = () => {
+    setIsModalOpen(false);
+    if (upcomingConsultation) {
+      navigate(`/consultations/${upcomingConsultation.id}`);
+    }
+  };
 
   if (!token) {
     return <Navigate to="/login" replace />;
@@ -36,5 +64,15 @@ export default function PrivateRoute() {
     return <Navigate to="/dashboard" replace />;
   }
 
-  return <Outlet />;
+  return (
+    <>
+      <Outlet />
+      <UpcomingConsultationModal
+        consultation={upcomingConsultation || null}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onJoin={handleJoin}
+      />
+    </>
+  );
 }

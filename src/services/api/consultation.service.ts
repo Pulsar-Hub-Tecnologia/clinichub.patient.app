@@ -78,6 +78,11 @@ class ConsultationService {
     return response.data;
   }
 
+  static async getUpcomingConsultation(): Promise<Consultation | null> {
+    const response = await api.get(`${AppRoutes.PATIENT_CONSULTATIONS}/upcoming`);
+    return response.data;
+  }
+
   static async getConsultationById(id: string): Promise<Consultation> {
     const response = await api.get(`${AppRoutes.PATIENT_CONSULTATIONS}/${id}`);
     return response.data;

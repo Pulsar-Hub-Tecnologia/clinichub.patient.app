@@ -28,6 +28,7 @@ import SelectWorkspace from '@/pages/private/consultations/create/select-workspa
 import SelectProfessional from '@/pages/private/consultations/create/select-professional.tsx';
 import SelectSchedule from '@/pages/private/consultations/create/select-schedule.tsx';
 import ConfirmConsultation from '@/pages/private/consultations/create/confirm-consultation.tsx';
+import CheckoutPage from '@/pages/private/checkout/checkout.tsx';
 import WorkspaceReception from '@/pages/private/workspace-reception.tsx';
 import WelcomePage from '@/pages/private/onboarding/welcome.tsx';
 
@@ -53,6 +54,7 @@ export const AppRoute = () => {
 
           <Route element={<PrivateRoute />}>
             <Route path='/welcome' element={<WelcomePage />} />
+            <Route path='/checkout' element={<CheckoutPage />} />
             <Route
               path='/dashboard'
               element={

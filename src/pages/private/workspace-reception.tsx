@@ -17,6 +17,8 @@ import {
   Building,
   CheckCircle2,
   MessageCircle,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import PatientService from "@/services/api/patient.service";
 
@@ -24,6 +26,10 @@ export default function WorkspaceReceptionPage() {
   const { workspaceId } = useParams();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("plans");
+  const [plansPage, setPlansPage] = useState(1);
+  const [servicesPage, setServicesPage] = useState(1);
+  const PLANS_PER_PAGE = 3;
+  const SERVICES_PER_PAGE = 3;
 
   const { data: workspace, isLoading } = useQuery({
     queryKey: ["workspace-reception", workspaceId],
@@ -31,8 +37,24 @@ export default function WorkspaceReceptionPage() {
     enabled: !!workspaceId,
   });
 
+  const { data: plansData, isLoading: isLoadingPlans } = useQuery({
+    queryKey: ["workspace-plans", workspaceId, plansPage],
+    queryFn: () => PatientService.getWorkspacePlans(workspaceId!, plansPage, PLANS_PER_PAGE),
+    enabled: !!workspaceId,
+  });
+
+  const { data: servicesData, isLoading: isLoadingServices } = useQuery({
+    queryKey: ["workspace-services", workspaceId, servicesPage],
+    queryFn: () => PatientService.getWorkspaceServices(workspaceId!, servicesPage, SERVICES_PER_PAGE),
+    enabled: !!workspaceId,
+  });
+
   const handleScheduleConsultation = () => {
     navigate("/consultations", { state: { tab: "schedule", workspaceId } });
+  };
+
+  const handleCheckout = (item: any, type: 'plan' | 'service') => {
+    navigate("/checkout", { state: { item, type, workspace } });
   };
 
   if (isLoading) {
@@ -58,76 +80,47 @@ export default function WorkspaceReceptionPage() {
     { label: "Pacientes Ativos", value: "2.8k+", icon: Users },
   ];
 
-  const plans = [
-    {
-      name: "Plano Básico",
-      price: "199,90",
-      color: "blue",
-      features: [
-        "10 consultas /mês",
-        "4 especialidades",
-        "Agendamento online",
-        "Telemedicina incluída",
-      ],
-    },
-    {
-      name: "Plano Completo",
-      price: "299,90",
-      color: "purple",
-      features: [
-        "20 consultas /mês",
-        "8 especialidades",
-        "Agendamento prioritário",
-        "Telemedicina ilimitada",
-        "Exames com desconto",
-      ],
-    },
-    {
-      name: "Plano Premium",
-      price: "399,90",
-      color: "orange",
-      features: [
-        "Consultas ilimitadas",
-        "Todas especialidades",
-        "Atendimento VIP",
-        "Telemedicina 24/7",
-        "Exames gratuitos",
-      ],
-    },
-  ];
+  const getPlanColorStyles = (index: number) => {
+    const styles = [
+      {
+        bg: "bg-blue-50",
+        border: "border-blue-200",
+        button: "bg-blue-600 hover:bg-blue-700",
+        price: "text-blue-600",
+        text: "text-blue-600",
+      },
+      {
+        bg: "bg-purple-50",
+        border: "border-purple-200",
+        button: "bg-purple-600 hover:bg-purple-700",
+        price: "text-purple-600",
+        text: "text-purple-600",
+      },
+      {
+        bg: "bg-yellow-50",
+        border: "border-yellow-200",
+        button: "bg-yellow-600 hover:bg-yellow-700",
+        price: "text-yellow-600",
+        text: "text-yellow-800",
+      },
+    ];
+    return styles[index % styles.length];
+  };
 
-  const services = [
-    {
-      name: "Cardiologia",
-      description: "Cuidados especializados para saúde do coração e sistema cardiovascular",
-      specialists: 4,
-      price: "250,00",
-      duration: "45 minutos",
-      active: true,
-      icon: "❤️",
-      color: "red",
-    },
-    {
-      name: "Neurologia",
-      description: "Diagnóstico e tratamento de doenças do sistema nervoso",
-      specialists: 3,
-      price: "300,00",
-      duration: "50 minutos",
-      active: true,
-      icon: "🧠",
-      color: "blue",
-    },
-    {
-      name: "Ortopedia",
-      description: "Tratamento de lesões e doenças do sistema musculoesquelético",
-      specialists: 5,
-      price: "280,00",
-      duration: "40 minutos",
-      active: true,
-      icon: "🦴",
-      color: "purple",
-    },
-  ];
+  const formatPrice = (price: number) => {
+    return price.toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    });
+  };
+
+  const calculateTotalPrice = (plan: any): number => {
+    if (!plan.steps || plan.steps.length === 0) return 0;
+    return plan.steps.reduce((total: number, step: any) => {
+      const price = step.service?.price || 0;
+      return total + price * step.quantity;
+    }, 0);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -354,117 +347,239 @@ export default function WorkspaceReceptionPage() {
           </TabsList>
 
           <TabsContent value="plans" className="space-y-6">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <Award className="h-6 w-6 text-purple-600" />
-                <h2 className="text-2xl font-bold">Planos e Protocolos Disponíveis</h2>
-              </div>
-              <p className="text-gray-600 mb-6">Escolha o ideal para suas necessidades</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {plans.map((plan) => (
-                <Card
-                  key={plan.name}
-                  className={`border-2 ${plan.color === "blue"
-                    ? "border-blue-200 bg-blue-50"
-                    : plan.color === "purple"
-                      ? "border-purple-200 bg-purple-50"
-                      : "border-orange-200 bg-orange-50"
-                    }`}
-                >
-                  <CardContent className="p-6">
-                    <h3 className="text-xl font-bold mb-4">{plan.name}</h3>
-                    <div className="mb-6">
-                      <span className="text-4xl font-bold">R$ {plan.price}</span>
-                      <span className="text-gray-600 ml-2">por mês</span>
+            <Card className="border-none shadow-none bg-transparent">
+              <CardContent className="p-0">
+                <div className="bg-white rounded-lg p-6 border shadow-sm">
+                  <div className="mb-6">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Award className="h-6 w-6 text-purple-600" />
+                      <h2 className="text-2xl font-bold">Planos e Protocolos Disponíveis</h2>
                     </div>
-                    <ul className="space-y-3 mb-6">
-                      {plan.features.map((feature) => (
-                        <li key={feature} className="flex items-start gap-2">
-                          <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                          <span className="text-sm">{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    <Button
-                      className={`w-full ${plan.color === "blue"
-                        ? "bg-blue-600 hover:bg-blue-700"
-                        : plan.color === "purple"
-                          ? "bg-purple-600 hover:bg-purple-700"
-                          : "bg-orange-600 hover:bg-orange-700"
-                        }`}
-                    >
-                      Contratar Plano
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    <p className="text-gray-600">Escolha o ideal para suas necessidades</p>
+                  </div>
+
+                  {isLoadingPlans ? (
+                    <div className="flex justify-center py-12">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                    </div>
+                  ) : !plansData?.data || plansData.data.length === 0 ? (
+                    <div className="text-center py-12 text-gray-500">
+                      Nenhum plano ou protocolo disponível no momento.
+                    </div>
+                  ) : (
+                    <>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        {plansData.data.map((plan: any, index: number) => {
+                          const styles = getPlanColorStyles(index);
+                          const totalPrice = calculateTotalPrice(plan);
+
+                          return (
+                            <Card
+                              key={plan.id}
+                              className={`border-2 ${styles.bg} ${styles.border}`}
+                            >
+                              <CardContent className="p-6 flex flex-col h-full">
+                                <h3 className="text-xl font-bold mb-4">{plan.name}</h3>
+                                <div className="mb-6">
+                                  <span className={`text-3xl font-bold ${styles.price}`}>
+                                    {formatPrice(totalPrice)}
+                                  </span>
+                                  {plan.expires_in_unit && (
+                                    <span className="text-gray-600 ml-2 text-sm">
+                                      / {plan.expires_in_value} {plan.expires_in_unit === "MONTH" ? "mês" : plan.expires_in_unit === "YEAR" ? "ano" : plan.expires_in_unit === "WEEK" ? "semana" : "dia"}
+                                    </span>
+                                  )}
+                                </div>
+
+                                <div className="flex-1">
+                                  <ul className="space-y-3 mb-6">
+                                    {plan.steps?.map((step: any, i: number) => (
+                                      <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
+                                        <CheckCircle2 className={`h-4 w-4 mt-0.5 flex-shrink-0 ${styles.text}`} />
+                                        <span>
+                                          {step.quantity}x {step.service?.name || "Serviço"}
+                                        </span>
+                                      </li>
+                                    ))}
+                                    {plan.description && (
+                                      <li className="flex items-start gap-2 text-sm text-gray-700">
+                                        <CheckCircle2 className={`h-4 w-4 mt-0.5 flex-shrink-0 ${styles.text}`} />
+                                        <span className="line-clamp-3">{plan.description}</span>
+                                      </li>
+                                    )}
+                                  </ul>
+                                </div>
+
+                                <Button
+                                  className={`w-full ${styles.button}`}
+                                  onClick={() => handleCheckout(plan, 'plan')}
+                                >
+                                  Contratar Plano
+                                </Button>
+                              </CardContent>
+                            </Card>
+                          );
+                        })}
+                      </div>
+
+                      {plansData.totalPages > 1 && (
+                        <div className="flex items-center justify-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => setPlansPage((p) => Math.max(1, p - 1))}
+                            disabled={plansPage === 1}
+                          >
+                            <ChevronLeft className="h-4 w-4" />
+                          </Button>
+
+                          {Array.from({ length: plansData.totalPages }, (_, i) => i + 1).map((page) => (
+                            <Button
+                              key={page}
+                              variant={plansPage === page ? "default" : "outline"}
+                              size="icon"
+                              onClick={() => setPlansPage(page)}
+                              className={plansPage === page ? "bg-purple-600 hover:bg-purple-700" : ""}
+                            >
+                              {page}
+                            </Button>
+                          ))}
+
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => setPlansPage((p) => Math.min(plansData.totalPages, p + 1))}
+                            disabled={plansPage === plansData.totalPages}
+                          >
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="services" className="space-y-6">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <Building className="h-6 w-6 text-purple-600" />
-                <h2 className="text-2xl font-bold">Nossos Serviços</h2>
-              </div>
-              <p className="text-gray-600 mb-6">Conheça todos os serviços oferecidos pela clínica</p>
-            </div>
+            <Card className="border-none shadow-none bg-transparent">
+              <CardContent className="p-0">
+                <div className="bg-white rounded-lg p-6 border shadow-sm">
+                  <div className="mb-6">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Building className="h-6 w-6 text-purple-600" />
+                      <h2 className="text-2xl font-bold">Nossos Serviços</h2>
+                    </div>
+                    <p className="text-gray-600">Conheça todos os serviços oferecidos pela clínica</p>
+                  </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {services.map((service) => (
-                <Card key={service.name} className="border">
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div
-                        className={`w-12 h-12 rounded-lg flex items-center justify-center text-2xl ${service.color === "red"
-                          ? "bg-red-100"
-                          : service.color === "blue"
-                            ? "bg-blue-100"
-                            : "bg-purple-100"
-                          }`}
-                      >
-                        {service.icon}
+                  {isLoadingServices ? (
+                    <div className="flex justify-center py-12">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                    </div>
+                  ) : !servicesData?.data || servicesData.data.length === 0 ? (
+                    <div className="text-center py-12 text-gray-500">
+                      Nenhum serviço disponível no momento.
+                    </div>
+                  ) : (
+                    <>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        {servicesData.data.map((service: any, index: number) => {
+                          const styles = getPlanColorStyles(index);
+
+                          return (
+                            <Card key={service.id} className={`border-2 ${styles.bg} ${styles.border}`}>
+                              <CardContent className="p-6 flex flex-col h-full">
+                                <div className="flex items-start justify-between mb-4">
+                                  <div
+                                    className={`w-12 h-12 rounded-lg flex items-center justify-center text-2xl bg-white/50`}
+                                  >
+                                    {service.image ? (
+                                      <img
+                                        src={service.image}
+                                        alt={service.name}
+                                        className="w-full h-full object-cover rounded-lg"
+                                      />
+                                    ) : (
+                                      <Building className={`h-6 w-6 ${styles.text}`} />
+                                    )}
+                                  </div>
+                                  {service.status === "ACTIVE" && (
+                                    <Badge className="bg-green-100 text-green-700 border-green-200 hover:bg-green-100">
+                                      ATIVO
+                                    </Badge>
+                                  )}
+                                </div>
+
+                                <h3 className="text-lg font-bold mb-2">{service.name}</h3>
+                                <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                                  {service.description}
+                                </p>
+
+                                <div className="space-y-2 mb-6 text-sm flex-1">
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-semibold">💰</span>
+                                    <span className={styles.price}>{formatPrice(service.price)}</span>
+                                  </div>
+                                  {service.duration && (
+                                    <div className="flex items-center gap-2">
+                                      <Clock className={`h-4 w-4 ${styles.text}`} />
+                                      <span>Duração: {service.duration} min</span>
+                                    </div>
+                                  )}
+                                </div>
+
+                                <Button
+                                  className={`w-full ${styles.button}`}
+                                  onClick={() => handleCheckout(service, 'service')}
+                                >
+                                  Contratar
+                                </Button>
+                              </CardContent>
+                            </Card>
+                          );
+                        })}
                       </div>
-                      {service.active && (
-                        <Badge className="bg-green-100 text-green-700 border-green-200">ATIVO</Badge>
+
+                      {servicesData.totalPages > 1 && (
+                        <div className="flex items-center justify-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => setServicesPage((p) => Math.max(1, p - 1))}
+                            disabled={servicesPage === 1}
+                          >
+                            <ChevronLeft className="h-4 w-4" />
+                          </Button>
+
+                          {Array.from({ length: servicesData.totalPages }, (_, i) => i + 1).map((page) => (
+                            <Button
+                              key={page}
+                              variant={servicesPage === page ? "default" : "outline"}
+                              size="icon"
+                              onClick={() => setServicesPage(page)}
+                              className={servicesPage === page ? "bg-purple-600 hover:bg-purple-700" : ""}
+                            >
+                              {page}
+                            </Button>
+                          ))}
+
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => setServicesPage((p) => Math.min(servicesData.totalPages, p + 1))}
+                            disabled={servicesPage === servicesData.totalPages}
+                          >
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
+                        </div>
                       )}
-                    </div>
-
-                    <h3 className="text-lg font-bold mb-2">{service.name}</h3>
-                    <p className="text-sm text-gray-600 mb-4">{service.description}</p>
-
-                    <div className="space-y-2 mb-4 text-sm">
-                      <div className="flex items-center gap-2">
-                        <Users className="h-4 w-4 text-purple-600" />
-                        <span>{service.specialists} especialistas disponíveis</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold">💰</span>
-                        <span>A partir de R$ {service.price}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-purple-600" />
-                        <span>Duração: {service.duration}</span>
-                      </div>
-                    </div>
-
-                    <Button
-                      variant="outline"
-                      className={`w-full ${service.color === "red"
-                        ? "text-red-600 border-red-200 hover:bg-red-50"
-                        : service.color === "blue"
-                          ? "text-blue-600 border-blue-200 hover:bg-blue-50"
-                          : "text-purple-600 border-purple-200 hover:bg-purple-50"
-                        }`}
-                    >
-                      Contratar
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    </>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>

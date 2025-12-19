@@ -163,6 +163,28 @@ class PatientService {
     return response.data;
   }
 
+  static async getWorkspacePlans(workspaceId: string, page: number = 1, limit: number = 3): Promise<PaginatedResponse<any>> {
+    const params = new URLSearchParams();
+    params.append("page", page.toString());
+    params.append("limit", limit.toString());
+
+    const response = await api.get(
+      `${AppRoutes.PATIENT_WORKSPACES}/${workspaceId}/plans?${params.toString()}`
+    );
+    return response.data;
+  }
+
+  static async getWorkspaceServices(workspaceId: string, page: number = 1, limit: number = 3): Promise<PaginatedResponse<any>> {
+    const params = new URLSearchParams();
+    params.append("page", page.toString());
+    params.append("limit", limit.toString());
+
+    const response = await api.get(
+      `${AppRoutes.PATIENT_WORKSPACES}/${workspaceId}/services?${params.toString()}`
+    );
+    return response.data;
+  }
+
   static async getRecentProfessionals(workspaceId: string, limit: number = 3): Promise<any[]> {
     const response = await api.get(
       `${AppRoutes.PATIENT_WORKSPACES}/${workspaceId}/recent-professionals?limit=${limit}`
